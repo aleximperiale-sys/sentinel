@@ -2,7 +2,7 @@
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Sentinel_TeamRollup</fullName>
     <label>Sentinel Team Rollup</label>
-    <description>Flow-fronted wrapper over SentinelTeamRollupAction. At-risk record counts grouped by owner, across every watched object — the manager leaderboard view. Holds no logic of its own.</description>
+    <description>Flow-fronted wrapper over SentinelTeamRollupAction. At-risk record counts grouped by owner, across every watched object, the manager leaderboard view. Holds no logic of its own.</description>
     <processType>AutoLaunchedFlow</processType>
     <apiVersion>65.0</apiVersion>
     <status>Active</status>

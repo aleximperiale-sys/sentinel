@@ -1,7 +1,7 @@
 /**
  * Cross-object correlation: given one at-risk record (an Opportunity or Case),
  * resolves its Account and reports the account's other open Cases and open
- * Opportunities — so a stale deal can be read alongside "this account also has
+ * Opportunities, so a stale deal can be read alongside "this account also has
  * two unresolved support cases." Fronted by the Sentinel_AccountContext flow.
  */
 public with sharing class SentinelAccountContextAction {

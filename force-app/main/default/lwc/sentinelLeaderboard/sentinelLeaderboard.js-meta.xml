@@ -3,7 +3,7 @@
     <apiVersion>65.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Sentinel Team Rollup</masterLabel>
-    <description>At-risk record counts grouped by owner, across every watched object — the manager leaderboard view.</description>
+    <description>At-risk record counts grouped by owner, across every watched object, the manager leaderboard view.</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>

@@ -1,5 +1,5 @@
 /**
- * SentinelMonitor — scheduled proactive sweep. Runs every active config, posts a
+ * SentinelMonitor, scheduled proactive sweep. Runs every active config, posts a
  * digest to the running user's Chatter feed, and raises a custom notification for
  * any config whose stale count meets or exceeds its Threshold_Alert__c.
  *
@@ -64,7 +64,7 @@ public with sharing class SentinelMonitor implements Schedulable {
         try {
             insert new FeedItem(
                 ParentId = me,
-                Body = 'Sentinel daily health digest — ' + grandTotal + ' records at-risk\n' +
+                Body = 'Sentinel daily health digest, ' + grandTotal + ' records at-risk\n' +
                     String.join(lines, '\n')
             );
         } catch (Exception e) {

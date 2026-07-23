@@ -1,6 +1,6 @@
 /**
  * Read-only controller for the Sentinel LWC dashboard. Returns per-object health
- * with freshness bands, top owners, and the record list — all from SentinelService.
+ * with freshness bands, top owners, and the record list, all from SentinelService.
  */
 public with sharing class SentinelDashboardController {
 
@@ -168,7 +168,7 @@ public with sharing class SentinelDashboardController {
                     Object nm = so.get(nameField);
                     names.put((Id) so.get('Id'), nm == null ? '(no name)' : String.valueOf(nm));
                 }
-            } catch (Exception e) { /* config missing or field unsafe — fall back to raw Id */ }
+            } catch (Exception e) { /* config missing or field unsafe, fall back to raw Id */ }
             out.put(objectApiName, names);
         }
         return out;

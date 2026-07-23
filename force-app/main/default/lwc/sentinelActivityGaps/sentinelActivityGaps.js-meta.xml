@@ -3,7 +3,7 @@
     <apiVersion>65.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Sentinel Activity Gaps</masterLabel>
-    <description>Splits at-risk records into never-contacted vs. went-cold, per watched object — two different problems with two different fixes.</description>
+    <description>Splits at-risk records into never-contacted vs. went-cold, per watched object, two different problems with two different fixes.</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>

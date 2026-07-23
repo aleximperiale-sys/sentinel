@@ -45,7 +45,7 @@ export default class SentinelSingleThreaded extends LightningElement {
             stage: r.priority || '(no stage)',
             band: r.band,
             bandClass: 'st-band st-band--' + (r.band || '').toLowerCase(),
-            amountFormatted: r.amount ? '$' + Math.round(r.amount).toLocaleString('en-US') : '—',
+            amountFormatted: r.amount ? '$' + Math.round(r.amount).toLocaleString('en-US') : ', ',
             url: r.url
         }));
     }

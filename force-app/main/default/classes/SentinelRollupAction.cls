@@ -1,5 +1,5 @@
 /**
- * Cross-object rollup — runs every active config in one call and returns a
+ * Cross-object rollup, runs every active config in one call and returns a
  * combined summary. Fronted by the Sentinel_Rollup flow for the agent and
  * reused by the dashboard's "everything at-risk" view.
  */

@@ -1,5 +1,5 @@
 /**
- * SentinelService — core staleness engine shared by every Sentinel entry point
+ * SentinelService, core staleness engine shared by every Sentinel entry point
  * (invocable actions, the scheduled monitor, and the LWC dashboard).
  *
  * All object-specific knowledge comes from Sentinel_Config__mdt, so one class
@@ -144,7 +144,7 @@ public with sharing class SentinelService {
 
         for (SObject row : rows) {
             Id rowId = (Id) row.get('Id');
-            if (snoozeMap.containsKey(rowId)) { continue; } // still snoozed — leave off the at-risk list
+            if (snoozeMap.containsKey(rowId)) { continue; } // still snoozed, leave off the at-risk list
 
             RecordInfo ri = new RecordInfo();
             ri.id = rowId;
@@ -198,7 +198,7 @@ public with sharing class SentinelService {
 
     // ------------------------------------------------------------ Enrichment
     private static String buildExplanation(Integer ageDays, Integer threshold, String bandLabel) {
-        if (ageDays == null) { return 'No staleness date on record — treated as Aging.'; }
+        if (ageDays == null) { return 'No staleness date on record, treated as Aging.'; }
         Decimal ratio = threshold > 0
             ? Decimal.valueOf(ageDays).divide(threshold, 1)
             : Decimal.valueOf(0);
@@ -238,7 +238,7 @@ public with sharing class SentinelService {
         return out;
     }
 
-    /** Earliest open (not-yet-completed) activity per WhatId/WhoId — the "next step". */
+    /** Earliest open (not-yet-completed) activity per WhatId/WhoId, the "next step". */
     private static Map<Id, Task> getNextStepMap(Set<Id> ids) {
         Map<Id, Task> out = new Map<Id, Task>();
         for (Task t : [
@@ -293,7 +293,7 @@ public with sharing class SentinelService {
     public static List<GroupCount> toGroupCounts(Map<String, Integer> m) {
         List<GroupCount> out = new List<GroupCount>();
         for (String k : m.keySet()) { out.add(new GroupCount(k, m.get(k))); }
-        // simple descending selection sort — result sets are small (grouped keys)
+        // simple descending selection sort, result sets are small (grouped keys)
         for (Integer i = 0; i < out.size(); i++) {
             for (Integer j = i + 1; j < out.size(); j++) {
                 if (out[j].count > out[i].count) {

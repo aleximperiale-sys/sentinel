@@ -3,13 +3,13 @@
   Sentinel deploy manifest.
 
   ⚠️  BEFORE DEPLOYING TO A NEW ORG, configure these (see README "Before you deploy"):
-    1. Agent user  — Sentinel ships as an Employee Agent (no default user needed).
+    1. Agent user, Sentinel ships as an Employee Agent (no default user needed).
                      If you switch it to a Service agent, set access.default_agent_user
                      in aiAuthoringBundles/Sentinel/Sentinel.agent to a real Einstein
                      Agent User, or publish fails.
-    2. Config records — review customMetadata/Sentinel_Config.*.md-meta.xml so the
+    2. Config records, review customMetadata/Sentinel_Config.*.md-meta.xml so the
                      watched objects, date fields, and thresholds match your org.
-    3. Permission set — assign Sentinel_User to the agent's running user AND end users.
+    3. Permission set, assign Sentinel_User to the agent's running user AND end users.
 
   Note: the AiAuthoringBundle deploys as an editable DRAFT. Publish + activate the
   agent separately (sf agent publish/activate, or in Agentforce Studio).

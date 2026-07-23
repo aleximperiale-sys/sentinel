@@ -44,7 +44,7 @@
                         <template if:false={row.hasEnough}>
                             <div class="tr-nodata">
                                 <span class="tr-nodata__num">{row.latestStale}</span>
-                                <span class="tr-nodata__label">at-risk today — trend line builds up after a few daily runs</span>
+                                <span class="tr-nodata__label">at-risk today, trend line builds up after a few daily runs</span>
                             </div>
                         </template>
                     </div>
@@ -53,7 +53,7 @@
         </template>
 
         <template if:true={showEmpty}>
-            <div class="tr-empty">No snapshot history yet — the daily monitor needs to run at least once.</div>
+            <div class="tr-empty">No snapshot history yet, the daily monitor needs to run at least once.</div>
         </template>
     </div>
 </template>

@@ -1,6 +1,6 @@
 /**
  * Write-back action: logs a completed activity today on a comma-separated list
- * of record Ids — the conversational equivalent of "log that I called them
+ * of record Ids, the conversational equivalent of "log that I called them
  * today." Resets each record's staleness clock. Fronted by Sentinel_LogActivity.
  */
 public with sharing class SentinelLogActivityAction {

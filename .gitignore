@@ -5,7 +5,7 @@
 deploy-options.json
 
 # Org-generated agent runtime artifacts (recreated by `sf agent publish`).
-# Source of truth is aiAuthoringBundles/Sentinel/Sentinel.agent — these contain
+# Source of truth is aiAuthoringBundles/Sentinel/Sentinel.agent, these contain
 # org-specific IDs and versions and should not be committed.
 force-app/main/default/bots/
 force-app/main/default/genAiPlannerBundles/
