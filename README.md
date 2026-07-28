@@ -6,6 +6,26 @@ Ask Sentinel *"what should I work on first?"*, open the **Sentinel** app for a l
 
 ---
 
+## Screenshots
+
+![Sentinel — Record Health Radar](docs/screenshots/01-sentinel.png)
+
+<details>
+<summary>More screenshots</summary>
+
+![Sentinel — at-risk records by object](docs/screenshots/02-sentinel.png)
+*Sentinel — at-risk records by object*
+
+![Trends](docs/screenshots/03-trends.png)
+*Trends — at-risk and critical counts over time, per watched object*
+
+![Team Rollup](docs/screenshots/04-team-rollup.png)
+*Team Rollup — at-risk records grouped by owner*
+
+</details>
+
+---
+
 > ## ⚠️ Before you deploy to a new org
 >
 > Three things to configure, the deploy will succeed without them, but the agent won't behave correctly until they're set:
