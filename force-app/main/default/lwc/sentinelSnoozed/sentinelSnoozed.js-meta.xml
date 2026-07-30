@@ -3,10 +3,11 @@
     <apiVersion>65.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Sentinel Snoozed</masterLabel>
-    <description>Lists currently-snoozed records, who snoozed them, and why, so deferrals stay visible instead of hidden.</description>
+    <description>Register of currently snoozed records: who deferred them, why, and how long until each one wakes and returns to the at-risk lists.</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>
         <target>lightning__Tab</target>
+        <target>lightning__RecordPage</target>
     </targets>
 </LightningComponentBundle>

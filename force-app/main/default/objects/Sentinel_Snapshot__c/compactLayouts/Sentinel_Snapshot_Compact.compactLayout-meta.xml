@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- Highlights-panel fields. A snapshot is "what was measured, when, and how
+         bad", so lead with the friendly label and date, then the two counts.
+         Without this the panel shows only the SNP-#### autonumber. -->
+    <fullName>Sentinel_Snapshot_Compact</fullName>
+    <fields>Name</fields>
+    <fields>Label__c</fields>
+    <fields>Snapshot_Date__c</fields>
+    <fields>Stale_Count__c</fields>
+    <fields>Critical_Count__c</fields>
+    <fields>Object_API_Name__c</fields>
+    <label>Sentinel Snapshot Highlights</label>
+</CompactLayout>

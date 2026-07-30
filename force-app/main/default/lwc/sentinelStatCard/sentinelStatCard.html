@@ -1,39 +1,115 @@
 <template>
-    <article class={card.cardClass} style={card.delayStyle}>
-        <div class={card.accentClass}></div>
-
-        <header class="sc-head">
-            <div class="sc-head__text">
-                <h2 class="sc-label">{card.label}</h2>
-                <span class="sc-object">{card.objectApiName}</span>
+    <article class={cardClass}>
+        <!-- Per-card loading: same box as the loaded card, so nothing reflows. -->
+        <template lwc:if={loading}>
+            <div class="sc__state">
+                <c-sentinel-skeleton variant="cards" count="1" loading-text="Loading object health"></c-sentinel-skeleton>
             </div>
-            <div class="sc-count">
-                <span class="sc-count__num">{card.staleCount}</span>
-                <span class="sc-count__cap">at-risk</span>
+        </template>
+
+        <template lwc:elseif={error}>
+            <div class="sc__state">
+                <c-sentinel-error-state
+                    headline={errorTitle}
+                    friendly-message={error}
+                    show-retry
+                    onretry={handleRetry}
+                ></c-sentinel-error-state>
             </div>
-        </header>
+        </template>
 
-        <div class="sc-bar" title="Freshness bands">
-            <div class="sc-seg sc-seg--aging" style={card.agingStyle}></div>
-            <div class="sc-seg sc-seg--stale" style={card.staleStyle}></div>
-            <div class="sc-seg sc-seg--critical" style={card.criticalStyle}></div>
-        </div>
+        <template lwc:else>
+            <header class="sc__head">
+                <div class="sc__ident">
+                    <h2 class="sc__label">{card.label}</h2>
+                    <p class="sc__object">{card.objectApiName}</p>
+                </div>
+                <div class="sc__count">
+                    <span class="sc__numeral">{card.staleCount}</span>
+                    <span class="sc__numeral-cap">at risk</span>
+                </div>
+            </header>
 
-        <div class="sc-legend">
-            <span class="sc-chip sc-chip--aging"><i></i>Aging {card.aging}</span>
-            <span class="sc-chip sc-chip--stale"><i></i>Stale {card.stale}</span>
-            <span class="sc-chip sc-chip--critical"><i></i>Critical {card.critical}</span>
-        </div>
+            <!-- Healthy object: the watchdog found nothing, which is a pass. -->
+            <template lwc:if={isClear}>
+                <div class="sc__clear">
+                    <c-sentinel-status-badge severity="success" label="All clear"></c-sentinel-status-badge>
+                    <p class="sc__clear-text">{clearText}</p>
+                </div>
+            </template>
 
-        <footer class="sc-foot">
-            <span class="sc-threshold">&gt; {card.thresholdDays}d idle</span>
-            <template if:true={hasOwners}>
-                <div class="sc-owners">
-                    <template for:each={card.owners} for:item="o">
-                        <span key={o.key} class="sc-owner">{o.key} · {o.count}</span>
+            <template lwc:else>
+                <div class="sc__bands">
+                    <c-sentinel-band-bar
+                        segments={card.bands}
+                        total={card.staleCount}
+                        unit-label="at-risk records"
+                    ></c-sentinel-band-bar>
+                </div>
+
+                <template lwc:if={card.trend}>
+                    <p class={trendClass}>
+                        <lightning-icon
+                            icon-name={card.trend.icon}
+                            size="xx-small"
+                            class="sc__trend-icon"
+                            alternative-text={card.trend.direction}
+                        ></lightning-icon>
+                        <span class="sc__trend-value">{card.trend.text}</span>
+                        <span class="sc__trend-note">{card.trend.note}</span>
+                    </p>
+                </template>
+            </template>
+
+            <footer class="sc__foot">
+                <c-sentinel-status-badge
+                    severity="info"
+                    label={thresholdLabel}
+                    tooltip="Records count as at risk once the tracked date is older than this."
+                ></c-sentinel-status-badge>
+                <template lwc:if={hasOwners}>
+                    <p class="sc__owner">
+                        <span class="sc__owner-key">Top owner</span>
+                        <span class="sc__owner-name">{topOwner.key}</span>
+                        <span class="sc__owner-count">{topOwner.count}</span>
+                    </p>
+                </template>
+            </footer>
+
+            <template lwc:if={hasRecords}>
+                <div class="sc__expand">
+                    <button class="sc__toggle" type="button" aria-expanded={expandedAttr} onclick={toggleRecords}>
+                        <lightning-icon
+                            icon-name={toggleIcon}
+                            size="xx-small"
+                            class="sc__toggle-icon"
+                            alternative-text=""
+                        ></lightning-icon>
+                        <span>{toggleLabel}</span>
+                    </button>
+
+                    <template lwc:if={expanded}>
+                        <ul class="sc__records">
+                            <template for:each={card.records} for:item="rec">
+                                <li class="sc__record" key={rec.id}>
+                                    <a class="sc__record-link" href={rec.url} title={rec.explanation}>{rec.name}</a>
+                                    <span class="sc__record-meta">
+                                        <c-sentinel-status-badge
+                                            severity={rec.severity}
+                                            label={rec.band}
+                                            compact
+                                        ></c-sentinel-status-badge>
+                                        <span class="sc__record-age">{rec.ageText}</span>
+                                    </span>
+                                </li>
+                            </template>
+                        </ul>
+                        <template lwc:if={card.moreCount}>
+                            <p class="sc__more">{moreText}</p>
+                        </template>
                     </template>
                 </div>
             </template>
-        </footer>
+        </template>
     </article>
 </template>

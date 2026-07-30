@@ -3,7 +3,7 @@
     <apiVersion>65.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Sentinel Single-Threaded Deals</masterLabel>
-    <description>At-risk Opportunities with only one contact role, a relationship-depth risk distinct from plain staleness.</description>
+    <description>Risk register of at-risk Opportunities with one contact role or none, with severity pills, amount exposed, per-row detail and row actions.</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>

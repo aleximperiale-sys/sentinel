@@ -1,0 +1,34 @@
+<template>
+    <div class={rootClass}>
+        <div class="gg__dial">
+            <svg class="gg__svg" viewBox="0 0 100 100" role="img" aria-label={ariaLabel} focusable="false">
+                <circle class="gg__track" cx="50" cy="50" r="42"></circle>
+                <!--
+                    Keyed on the value so a new arc element is created whenever the
+                    number changes; that restarts the CSS keyframe and the arc sweeps
+                    to its new position without any imperative DOM work.
+                -->
+                <template for:each={rings} for:item="ring">
+                    <circle
+                        key={ring.key}
+                        class="gg__arc"
+                        cx="50"
+                        cy="50"
+                        r="42"
+                        style={ring.style}
+                    ></circle>
+                </template>
+            </svg>
+            <div class="gg__readout" aria-hidden="true">
+                <span class="gg__value">{displayValue}</span>
+                <span class="gg__unit">{unit}</span>
+            </div>
+        </div>
+        <template lwc:if={label}>
+            <p class="gg__label">{label}</p>
+        </template>
+        <template lwc:if={caption}>
+            <p class="gg__caption">{caption}</p>
+        </template>
+    </div>
+</template>

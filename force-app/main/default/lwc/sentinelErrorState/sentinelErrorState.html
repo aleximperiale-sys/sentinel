@@ -1,0 +1,43 @@
+<template>
+    <div class="er" role="alert">
+        <div class="er__row">
+            <lightning-icon
+                icon-name="utility:error"
+                size="small"
+                variant="error"
+                alternative-text="Error"
+            ></lightning-icon>
+            <div class="er__body">
+                <p class="er__title">{headline}</p>
+                <p class="er__message">{friendlyMessage}</p>
+
+                <div class="er__actions">
+                    <template lwc:if={showRetry}>
+                        <lightning-button
+                            variant="brand"
+                            label={retryLabel}
+                            icon-name="utility:refresh"
+                            disabled={retrying}
+                            onclick={handleRetry}
+                        ></lightning-button>
+                    </template>
+                    <lightning-button
+                        variant="base"
+                        label={detailToggleLabel}
+                        icon-name={detailToggleIcon}
+                        icon-position="right"
+                        aria-expanded={detailExpanded}
+                        onclick={toggleDetail}
+                    ></lightning-button>
+                </div>
+
+                <template lwc:if={showDetail}>
+                    <div class="er__detail">
+                        <p class="er__detail-label">Raw error (also written to the browser console)</p>
+                        <pre class="er__pre">{technicalDetail}</pre>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

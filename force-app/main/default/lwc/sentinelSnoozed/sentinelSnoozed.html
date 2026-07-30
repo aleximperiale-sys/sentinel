@@ -1,49 +1,182 @@
 <template>
-    <div class="sz-root">
-        <div class="sz-header">
-            <div>
-                <div class="sz-badge">◎ SENTINEL</div>
-                <h1 class="sz-title">Snoozed Records</h1>
-                <p class="sz-subtitle">Records reps have deferred, and why, nothing gets hidden silently</p>
+    <div class="page">
+        <c-sentinel-section-header
+            eyebrow="SENTINEL · DEFERRALS"
+            icon-name="utility:snooze"
+            headline="Snoozed Records"
+            description="Records a rep has deferred, who deferred them and why. Nothing drops off the radar silently."
+            readout-value={readoutValue}
+            readout-label="records snoozed"
+        >
+            <div slot="actions">
+                <lightning-button
+                    variant="inverse"
+                    label={refreshLabel}
+                    icon-name="utility:refresh"
+                    disabled={refreshing}
+                    onclick={handleRefresh}
+                ></lightning-button>
             </div>
-            <button class="sz-refresh" onclick={handleRefresh} title="Refresh">
-                <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
-            </button>
+        </c-sentinel-section-header>
+
+        <div class="slds-m-top_small">
+            <c-sentinel-filter-bar
+                search-label="Search snoozed records"
+                search-placeholder="Search record, reason or person…"
+                search-term={searchTerm}
+                sort-options={sortOptions}
+                sort-value={sortBy}
+                shown-count={shownCount}
+                total-count={totalCount}
+                noun="snoozed records"
+                loading={refreshing}
+                onsearch={handleSearch}
+                onsort={handleSort}
+                onrefresh={handleRefresh}
+            ></c-sentinel-filter-bar>
         </div>
 
-        <template if:true={loading}>
-            <div class="sz-state">
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        <template lwc:if={showSkeleton}>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="tiles" count="3" loading-text="Loading deferral summary"></c-sentinel-skeleton>
+            </div>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="rows" count="6" loading-text="Loading snoozed records"></c-sentinel-skeleton>
             </div>
         </template>
 
-        <template if:true={error}>
-            <div class="sz-error">
-                <lightning-icon icon-name="utility:warning" size="small" variant="error"></lightning-icon>
-                <span>{errorMessage}</span>
+        <template lwc:elseif={showError}>
+            <div class="slds-m-top_small">
+                <c-sentinel-error-state
+                    headline="Snoozed records could not load"
+                    friendly-message={errorMessage}
+                    technical-detail={errorDetail}
+                    show-retry
+                    retrying={refreshing}
+                    onretry={handleRefresh}
+                ></c-sentinel-error-state>
             </div>
         </template>
 
-        <template if:true={hasData}>
-            <div class="sz-grid">
-                <template for:each={rows} for:item="row">
-                    <div class="sz-card" key={row.key}>
-                        <div class="sz-card__head">
-                            <span class="sz-name">{row.displayName}</span>
-                            <span class="sz-object">{row.objectApiName}</span>
-                        </div>
-                        <p class="sz-reason">{row.reason}</p>
-                        <div class="sz-foot">
-                            <span class="sz-by">Snoozed by {row.snoozedByName}</span>
-                            <span class={row.urgentClass}>{row.daysRemaining} day(s) left</span>
-                        </div>
+        <template lwc:elseif={showEmpty}>
+            <div class="slds-m-top_small">
+                <c-sentinel-empty-state
+                    tone="success"
+                    headline="Nothing is snoozed"
+                    message="No deferral is currently hiding a record from the at-risk lists, so what you see elsewhere in Sentinel is the whole picture."
+                    next-step="Reps can snooze from the Sentinel agent when a record genuinely needs to wait."
+                ></c-sentinel-empty-state>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="summary fade-in">
+                <div class="summary__cell">
+                    <p class="summary__label">Records snoozed</p>
+                    <p class="summary__value">{totalCount}</p>
+                </div>
+                <div class="summary__cell">
+                    <p class="summary__label">Waking within 3 days</p>
+                    <p class="summary__value">{expiringSoonCount}</p>
+                </div>
+                <div class="summary__cell">
+                    <p class="summary__label">Objects covered</p>
+                    <p class="summary__value">{objectCount}</p>
+                </div>
+            </div>
+
+            <template lwc:if={noMatches}>
+                <div class="slds-m-top_small">
+                    <c-sentinel-empty-state
+                        tone="neutral"
+                        icon-name="utility:search"
+                        headline="No snoozed record matches that search"
+                        message={noMatchMessage}
+                        action-label="Clear search"
+                        action-icon="utility:close"
+                        onaction={handleClearSearch}
+                    ></c-sentinel-empty-state>
+                </div>
+            </template>
+
+            <template lwc:else>
+                <!-- Custom rows rather than lightning-datatable: each row pairs a
+                     free-text reason with a wake-up countdown pill and an action menu,
+                     and restacks as a card on phones. -->
+                <ul class="register fade-in" aria-label="Currently snoozed records">
+                    <template for:each={visibleRows} for:item="row">
+                        <li class="register__item" key={row.key}>
+                            <div class="register__row">
+                                <span class="register__ident">
+                                    <button class="register__name" type="button" data-id={row.recordId} onclick={handleOpen}>
+                                        {row.displayName}
+                                    </button>
+                                    <span class="register__object">{row.objectApiName}</span>
+                                </span>
+
+                                <span class="register__reason" title={row.reason}>{row.reason}</span>
+
+                                <span class="register__by">
+                                    <span class="register__by-label">Snoozed by</span>
+                                    <span class="register__by-name">{row.snoozedByName}</span>
+                                </span>
+
+                                <span class="register__until">
+                                    <span class="register__until-label">Wakes</span>
+                                    <span class="register__until-date">{row.snoozedUntil}</span>
+                                </span>
+
+                                <span class="register__badge">
+                                    <c-sentinel-status-badge
+                                        severity={row.severity}
+                                        label={row.countdownLabel}
+                                        compact
+                                        tooltip={row.countdownTooltip}
+                                    ></c-sentinel-status-badge>
+                                </span>
+
+                                <span class="register__actions">
+                                    <lightning-button-menu
+                                        alternative-text={row.menuAlt}
+                                        icon-size="x-small"
+                                        menu-alignment="auto"
+                                        variant="border-filled"
+                                        data-id={row.recordId}
+                                        onselect={handleRowAction}
+                                    >
+                                        <lightning-menu-item
+                                            value="open"
+                                            label="Open record"
+                                            icon-name="utility:new_window"
+                                        ></lightning-menu-item>
+                                        <lightning-menu-item
+                                            value="copy"
+                                            label="Copy record link"
+                                            icon-name="utility:copy_to_clipboard"
+                                        ></lightning-menu-item>
+                                    </lightning-button-menu>
+                                </span>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+
+                <template lwc:if={hasMore}>
+                    <div class="more">
+                        <lightning-button
+                            variant="neutral"
+                            label={moreLabel}
+                            icon-name="utility:chevrondown"
+                            onclick={handleShowMore}
+                        ></lightning-button>
                     </div>
                 </template>
-            </div>
-        </template>
+            </template>
 
-        <template if:true={showEmpty}>
-            <div class="sz-empty">Nothing is currently snoozed.</div>
+            <p class="footnote">
+                Snoozes expire on their own; a record returns to the at-risk lists the day after it wakes. Ending a
+                snooze early is not available from this view.
+            </p>
         </template>
     </div>
 </template>

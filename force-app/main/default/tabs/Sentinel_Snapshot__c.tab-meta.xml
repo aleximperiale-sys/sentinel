@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Object tab for Sentinel_Snapshot__c. SentinelMonitor writes a row here every day
+  and sentinelTrends charts them, but without a tab nobody can open a single row to
+  see the numbers behind a point on the chart. Label comes from the object's plural
+  label ("Sentinel Snapshots"), custom-object tabs must not declare their own <label>.
+-->
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customObject>true</customObject>
+    <motif>Custom53: Bell</motif>
+</CustomTab>

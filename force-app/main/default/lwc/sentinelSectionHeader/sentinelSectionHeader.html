@@ -1,0 +1,34 @@
+<template>
+    <header class="sh">
+        <div class="sh__grain" aria-hidden="true"></div>
+        <div class="sh__row">
+            <div class="sh__main">
+                <p class="sh__eyebrow">
+                    <lightning-icon
+                        icon-name={iconName}
+                        size="xx-small"
+                        variant="inverse"
+                        alternative-text=""
+                    ></lightning-icon>
+                    <span>{eyebrow}</span>
+                </p>
+                <h1 class="sh__title">{headline}</h1>
+                <template lwc:if={description}>
+                    <p class="sh__desc">{description}</p>
+                </template>
+            </div>
+
+            <div class="sh__side">
+                <template lwc:if={showReadout}>
+                    <div class="sh__readout">
+                        <span class="sh__readout-value">{readoutValue}</span>
+                        <span class="sh__readout-label">{readoutLabel}</span>
+                    </div>
+                </template>
+                <div class="sh__actions">
+                    <slot name="actions"></slot>
+                </div>
+            </div>
+        </div>
+    </header>
+</template>

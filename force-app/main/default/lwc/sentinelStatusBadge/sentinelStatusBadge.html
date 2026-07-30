@@ -1,0 +1,14 @@
+<template>
+    <span class={badgeClass} title={tooltip}>
+        <lightning-icon
+            icon-name={icon}
+            size="xx-small"
+            class="sb__icon"
+            alternative-text={severityText}
+        ></lightning-icon>
+        <span class="sb__label">{label}</span>
+        <template lwc:if={showCount}>
+            <span class="sb__count">{count}</span>
+        </template>
+    </span>
+</template>

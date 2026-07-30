@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Record page for Sentinel_Snooze__c, assigned as the org default via the object's
+  <actionOverrides> View override (see Sentinel_Snooze__c.object-meta.xml). Without
+  that override this page exists but is never shown.
+
+  header  : highlights panel, driven by the Sentinel_Snooze_Compact compact layout.
+  main    : record detail (field order comes from "Sentinel Snooze Layout"), then the
+            sentinelSnoozed register so the reader sees this deferral in the context
+            of every other live snooze and its wake-up countdown.
+  sidebar : Related Lists. Layout driven, so any future child relationship appears
+            automatically. Today nothing is a child of Sentinel_Snooze__c.
+
+  No Chatter or Activity component: feed tracking and activities are not enabled on
+  this object, and rows are written by the Sentinel agent/flows rather than discussed.
+-->
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Record page for a Sentinel snooze: what is deferred, until when, by whom and why, alongside the live snooze register.</description>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>force:highlightsPanel</componentName>
+                <identifier>force_highlightsPanel</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>header</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>force:detailPanel</componentName>
+                <identifier>force_detailPanel</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentName>sentinelSnoozed</componentName>
+                <identifier>sentinelSnoozedRegister</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>force:relatedListContainer</componentName>
+                <identifier>force_relatedListContainer</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>sidebar</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Sentinel Snooze Record Page</masterLabel>
+    <sobjectType>Sentinel_Snooze__c</sobjectType>
+    <template>
+        <name>flexipage:recordHomeTemplateDesktop</name>
+    </template>
+    <type>RecordPage</type>
+</FlexiPage>

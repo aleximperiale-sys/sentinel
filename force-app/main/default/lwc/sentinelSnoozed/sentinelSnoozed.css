@@ -1,104 +1,263 @@
+/* Sentinel control-room theme, keep identical across Sentinel page components. */
 :host {
     display: block;
+    --sen-violet-900: #2e1065;
+    --sen-violet-700: #4c1d95;
+    --sen-violet-600: #5b21b6;
+    --sen-violet-500: #7c3aed;
+    --sen-violet-100: #ede9fe;
+    --sen-violet-050: #f6f4ff;
+    --sen-indigo-600: #4f46e5;
+    --sen-ink: #1e1b3a;
+    --sen-ink-soft: #46436e;
+    --sen-ink-mute: #635f8c;
+    --sen-surface: #ffffff;
+    --sen-sunken: #f3f3f3;
+    --sen-track: #e5e1f6;
+    --sen-border: #d9d4f0;
+    --sen-border-strong: #b9b1e3;
+    --sen-critical: #a81b1b;
+    --sen-stale: #0176d3;
+    --sen-aging: #014486;
+    --sen-ok: #0b6e4f;
+    --sen-r-sm: 4px;
+    --sen-r-md: 8px;
+    --sen-r-lg: 12px;
+    --sen-shadow: 0 1px 2px rgba(30, 27, 58, 0.08), 0 2px 8px rgba(30, 27, 58, 0.06);
+    --sen-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.sz-root {
-    font-family: 'Salesforce Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    padding: 0.5rem;
-}
-.sz-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #ffffff;
-    border: 1px solid rgba(120, 120, 160, 0.10);
-    border-radius: 22px;
-    padding: 1.25rem 1.5rem;
-    box-shadow: 0 10px 26px rgba(23, 20, 61, 0.10), 0 2px 6px rgba(23, 20, 61, 0.06);
-    margin-bottom: 1rem;
-}
-.sz-badge {
-    display: inline-block;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.18em;
-    color: #6a5cff;
-    background: rgba(106, 92, 255, 0.10);
-    padding: 0.25rem 0.7rem;
-    border-radius: 999px;
-    margin-bottom: 0.5rem;
-}
-.sz-title { font-size: 1.5rem; font-weight: 800; color: #1b1b33; margin: 0; }
-.sz-subtitle { font-size: 0.85rem; color: #6b6b85; margin: 0.25rem 0 0; }
-.sz-refresh {
-    border: none;
-    background: #f4f5fa;
-    width: 38px; height: 38px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.4s ease, background 0.2s ease;
-}
-.sz-refresh:hover { background: #eceefc; transform: rotate(180deg); }
 
-.sz-grid {
+.page {
+    padding: 0.75rem;
+}
+
+.fade-in {
+    animation: sen-fade 200ms var(--sen-ease) both;
+}
+@keyframes sen-fade {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ---------- summary ---------- */
+.summary {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.75rem;
 }
-.sz-card {
-    background: #ffffff;
-    border: 1px solid rgba(120, 120, 160, 0.10);
-    border-radius: 18px;
-    padding: 1rem 1.15rem;
-    box-shadow: 0 10px 26px rgba(23, 20, 61, 0.08), 0 2px 6px rgba(23, 20, 61, 0.05);
-}
-.sz-card__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
-.sz-name { font-size: 1rem; font-weight: 700; color: #1b1b33; }
-.sz-object {
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #8a8aa6;
-    font-weight: 600;
-    white-space: nowrap;
-}
-.sz-reason {
-    font-size: 0.85rem;
-    color: #4a4a63;
-    margin: 0.5rem 0 0.85rem;
-    font-style: italic;
-}
-.sz-foot {
+.summary__cell {
+    box-sizing: border-box;
+    min-height: 5.25rem; /* matches sentinelSkeleton variant="tiles" */
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    border-top: 1px dashed rgba(120, 120, 160, 0.20);
-    padding-top: 0.6rem;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--sen-border);
+    border-radius: var(--sen-r-md);
+    background: var(--sen-surface);
 }
-.sz-by { font-size: 0.72rem; color: #6b6b85; }
-.sz-days {
-    font-size: 0.72rem;
+.summary__label {
+    margin: 0;
+    font-size: 0.625rem;
     font-weight: 700;
-    color: #6a5cff;
-    background: rgba(106, 92, 255, 0.10);
-    padding: 0.15rem 0.55rem;
-    border-radius: 8px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--sen-ink-mute);
+}
+.summary__value {
+    margin: 0.1875rem 0 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--sen-ink);
+}
+
+/* ---------- rows ---------- */
+.register {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    border: 1px solid var(--sen-border);
+    border-radius: var(--sen-r-lg);
+    background: var(--sen-surface);
+    box-shadow: var(--sen-shadow);
+    overflow: hidden;
+}
+.register__item {
+    border-bottom: 1px solid var(--sen-sunken);
+}
+.register__item:last-child {
+    border-bottom: none;
+}
+
+.register__row {
+    display: grid;
+    grid-template-columns: minmax(9rem, 1.4fr) minmax(8rem, 1.8fr) minmax(7rem, 1fr) 7rem 6.5rem 2.25rem;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 3.25rem; /* matches sentinelSkeleton variant="rows" */
+    padding: 0.5rem 0.875rem;
+    transition: background-color 140ms var(--sen-ease);
+}
+.register__row:hover {
+    background: var(--sen-violet-050);
+}
+
+.register__ident {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.register__name {
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: left;
+    color: var(--sen-violet-700);
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
-.sz-days--soon { color: #e02020; background: rgba(224, 32, 32, 0.10); }
-
-.sz-state { min-height: 160px; position: relative; }
-.sz-error {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #fff1f1;
-    color: #b3261e;
-    border-radius: 14px;
-    padding: 1rem 1.25rem;
-    font-weight: 600;
+.register__name:hover,
+.register__name:focus {
+    text-decoration: underline;
 }
-.sz-empty { text-align: center; padding: 2rem; color: #6b6b85; }
+.register__name:focus-visible {
+    outline: 2px solid var(--sen-violet-500);
+    outline-offset: 2px;
+    border-radius: var(--sen-r-sm);
+}
+.register__object {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--sen-ink-mute);
+}
+
+.register__reason {
+    min-width: 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--sen-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.register__by,
+.register__until {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.register__by-label,
+.register__until-label {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--sen-ink-mute);
+}
+.register__by-name,
+.register__until-date {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--sen-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.register__until-date {
+    font-variant-numeric: tabular-nums;
+}
+
+.register__badge {
+    display: flex;
+    min-width: 0;
+}
+.register__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.more {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.75rem;
+}
+
+.footnote {
+    margin: 0.875rem 0 0;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    color: var(--sen-ink-mute);
+}
+
+/* ---------- responsive: rows become record cards ---------- */
+@media (max-width: 68em) {
+    .register__row {
+        grid-template-columns: minmax(9rem, 1.3fr) minmax(7rem, 1fr) 6.5rem 2.25rem;
+    }
+    .register__reason {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        white-space: normal;
+    }
+    .register__until {
+        grid-column: 2 / 3;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 48em) {
+    .page {
+        padding: 0.5rem;
+    }
+    .register__row {
+        grid-template-columns: 1fr 2.25rem;
+        row-gap: 0.375rem;
+        padding: 0.75rem 0.875rem;
+    }
+    .register__ident {
+        grid-column: 1 / 2;
+    }
+    .register__actions {
+        grid-column: 2 / 3;
+        grid-row: 1;
+        align-items: flex-start;
+    }
+    .register__reason,
+    .register__by,
+    .register__until,
+    .register__badge {
+        grid-column: 1 / -1;
+    }
+    .register__by,
+    .register__until {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 0.375rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fade-in {
+        animation: none;
+    }
+    .register__row {
+        transition: none;
+    }
+}

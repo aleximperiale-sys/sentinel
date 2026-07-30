@@ -1,45 +1,223 @@
 <template>
-    <div class="st-root">
-        <div class="st-header">
-            <div>
-                <div class="st-badge">◎ SENTINEL</div>
-                <h1 class="st-title">Single-Threaded Deals</h1>
-                <p class="st-subtitle">At-risk Opportunities with only one contact role, a relationship risk, not just a staleness risk</p>
+    <div class="page">
+        <c-sentinel-section-header
+            eyebrow="SENTINEL · RISK REGISTER"
+            icon-name="utility:people"
+            headline="Single-Threaded Deals"
+            description="At-risk Opportunities with one contact role or none. A relationship risk on top of the staleness risk."
+            readout-value={readoutValue}
+            readout-label="deals exposed"
+        >
+            <div slot="actions">
+                <lightning-button
+                    variant="inverse"
+                    label={refreshLabel}
+                    icon-name="utility:refresh"
+                    disabled={refreshing}
+                    onclick={handleRefresh}
+                ></lightning-button>
             </div>
-            <button class="st-refresh" onclick={handleRefresh} title="Refresh">
-                <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
-            </button>
+        </c-sentinel-section-header>
+
+        <div class="slds-m-top_small">
+            <c-sentinel-filter-bar
+                search-label="Search deals"
+                search-placeholder="Search deal, owner or stage…"
+                search-term={searchTerm}
+                sort-options={sortOptions}
+                sort-value={sortBy}
+                shown-count={shownCount}
+                total-count={totalCount}
+                noun="deals"
+                loading={refreshing}
+                onsearch={handleSearch}
+                onsort={handleSort}
+                onrefresh={handleRefresh}
+            ></c-sentinel-filter-bar>
         </div>
 
-        <template if:true={loading}>
-            <div class="st-state">
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        <template lwc:if={showSkeleton}>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="tiles" count="3" loading-text="Loading register summary"></c-sentinel-skeleton>
+            </div>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="rows" count="8" loading-text="Loading single-threaded deals"></c-sentinel-skeleton>
             </div>
         </template>
 
-        <template if:true={error}>
-            <div class="st-error">
-                <lightning-icon icon-name="utility:warning" size="small" variant="error"></lightning-icon>
-                <span>{errorMessage}</span>
+        <template lwc:elseif={showError}>
+            <div class="slds-m-top_small">
+                <c-sentinel-error-state
+                    headline="Single-threaded deals could not load"
+                    friendly-message={errorMessage}
+                    technical-detail={errorDetail}
+                    show-retry
+                    retrying={refreshing}
+                    onretry={handleRefresh}
+                ></c-sentinel-error-state>
             </div>
         </template>
 
-        <template if:true={hasData}>
-            <div class="st-card">
-                <template for:each={rows} for:item="row">
-                    <a class="st-row" href={row.url} key={row.key}>
-                        <span class="st-name">{row.name}</span>
-                        <span class="st-owner">{row.owner}</span>
-                        <span class="st-stage">{row.stage}</span>
-                        <span class={row.bandClass}>{row.band}</span>
-                        <span class="st-amount">{row.amountFormatted}</span>
-                    </a>
+        <template lwc:elseif={showEmpty}>
+            <div class="slds-m-top_small">
+                <c-sentinel-empty-state
+                    tone="success"
+                    headline="No single-threaded deals at risk"
+                    message="Every at-risk Opportunity has more than one contact role, so no deal depends on a single relationship."
+                    next-step="Keep adding contact roles as deals progress, that is what keeps this list empty."
+                ></c-sentinel-empty-state>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="summary fade-in">
+                <div class="summary__cell">
+                    <p class="summary__label">Deals exposed</p>
+                    <p class="summary__value">{totalCount}</p>
+                </div>
+                <div class="summary__cell">
+                    <p class="summary__label">Amount exposed</p>
+                    <p class="summary__value">
+                        <lightning-formatted-number
+                            value={totalAmount}
+                            format-style="currency"
+                            maximum-fraction-digits="0"
+                        ></lightning-formatted-number>
+                    </p>
+                </div>
+                <div class="summary__cell">
+                    <p class="summary__label">Already critical</p>
+                    <p class="summary__value">{criticalCount}</p>
+                </div>
+            </div>
+
+            <template lwc:if={noMatches}>
+                <div class="slds-m-top_small">
+                    <c-sentinel-empty-state
+                        tone="neutral"
+                        icon-name="utility:search"
+                        headline="No deal matches that search"
+                        message={noMatchMessage}
+                        action-label="Clear search"
+                        action-icon="utility:close"
+                        onaction={handleClearSearch}
+                    ></c-sentinel-empty-state>
+                </div>
+            </template>
+
+            <template lwc:else>
+                <!-- Custom register rows rather than lightning-datatable: rows carry a
+                     severity pill, an expandable "why" panel and an action menu, and must
+                     restack as cards on phones. -->
+                <ul class="register fade-in" aria-label="Single-threaded at-risk Opportunities">
+                    <template for:each={visibleRows} for:item="row">
+                        <li class={row.rowClass} key={row.id}>
+                            <div class="register__row">
+                                <button
+                                    class="register__disclose"
+                                    type="button"
+                                    data-id={row.id}
+                                    aria-expanded={row.expandedAttr}
+                                    onclick={handleToggle}
+                                >
+                                    <lightning-icon
+                                        icon-name={row.toggleIcon}
+                                        size="xx-small"
+                                        class="register__disclose-icon"
+                                        alternative-text={row.toggleAlt}
+                                    ></lightning-icon>
+                                </button>
+
+                                <a class="register__name" href={row.url} title={row.name}>{row.name}</a>
+
+                                <span class="register__owner" title={row.owner}>{row.owner}</span>
+                                <span class="register__stage" title={row.stage}>{row.stage}</span>
+
+                                <span class="register__band">
+                                    <c-sentinel-status-badge
+                                        severity={row.severity}
+                                        label={row.band}
+                                        compact
+                                        tooltip={row.explanation}
+                                    ></c-sentinel-status-badge>
+                                </span>
+
+                                <span class="register__age">{row.ageText}</span>
+
+                                <span class="register__amount">
+                                    <template lwc:if={row.hasAmount}>
+                                        <lightning-formatted-number
+                                            value={row.amount}
+                                            format-style="currency"
+                                            maximum-fraction-digits="0"
+                                        ></lightning-formatted-number>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="register__no-amount">No amount</span>
+                                    </template>
+                                </span>
+
+                                <span class="register__actions">
+                                    <lightning-button-menu
+                                        alternative-text={row.menuAlt}
+                                        icon-size="x-small"
+                                        menu-alignment="auto"
+                                        variant="border-filled"
+                                        onselect={handleRowAction}
+                                        data-id={row.id}
+                                    >
+                                        <lightning-menu-item
+                                            value="open"
+                                            label="Open record"
+                                            icon-name="utility:new_window"
+                                        ></lightning-menu-item>
+                                        <lightning-menu-item
+                                            value="copy"
+                                            label="Copy record link"
+                                            icon-name="utility:copy_to_clipboard"
+                                        ></lightning-menu-item>
+                                    </lightning-button-menu>
+                                </span>
+                            </div>
+
+                            <template lwc:if={row.expanded}>
+                                <div class="detail">
+                                    <dl class="detail__list">
+                                        <div class="detail__item">
+                                            <dt>Why it is flagged</dt>
+                                            <dd>{row.explanation}</dd>
+                                        </div>
+                                        <div class="detail__item">
+                                            <dt>Last logged activity</dt>
+                                            <dd>{row.lastActivityText}</dd>
+                                        </div>
+                                        <div class="detail__item">
+                                            <dt>Next step on file</dt>
+                                            <dd>{row.nextStepText}</dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            </template>
+                        </li>
+                    </template>
+                </ul>
+
+                <template lwc:if={hasMore}>
+                    <div class="more">
+                        <lightning-button
+                            variant="neutral"
+                            label={moreLabel}
+                            icon-name="utility:chevrondown"
+                            onclick={handleShowMore}
+                        ></lightning-button>
+                    </div>
                 </template>
-            </div>
-        </template>
+            </template>
 
-        <template if:true={showEmpty}>
-            <div class="st-empty">No single-threaded at-risk Opportunities, nice work keeping relationships broad.</div>
+            <p class="footnote">
+                A deal counts as single-threaded when Sentinel finds one Opportunity Contact Role or none. Contact roles
+                are the only signal used, related contacts on the account are not counted.
+            </p>
         </template>
     </div>
 </template>

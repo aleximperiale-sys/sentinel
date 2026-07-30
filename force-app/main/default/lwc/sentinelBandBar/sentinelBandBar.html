@@ -1,0 +1,24 @@
+<template>
+    <div class="bb">
+        <div class={trackClass} role="img" aria-label={ariaLabel}>
+            <template for:each={visibleSegments} for:item="seg">
+                <div key={seg.key} class={seg.className} style={seg.style} title={seg.title}></div>
+            </template>
+        </div>
+
+        <template lwc:if={showLegend}>
+            <ul class="bb__legend">
+                <template for:each={segments} for:item="seg">
+                    <li key={seg.key} class="bb__legend-item">
+                        <c-sentinel-status-badge
+                            severity={seg.severity}
+                            label={seg.label}
+                            count={seg.count}
+                            tooltip={seg.title}
+                        ></c-sentinel-status-badge>
+                    </li>
+                </template>
+            </ul>
+        </template>
+    </div>
+</template>

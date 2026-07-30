@@ -38,6 +38,17 @@
         <visibility>Visible</visibility>
     </tabSettings>
 
+    <!-- Object tabs. Custom-object tabs are named after the object, and without
+         Visible here the object stays unreachable even though a tab exists. -->
+    <tabSettings>
+        <tab>Sentinel_Snooze__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Sentinel_Snapshot__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+
     <!-- Apex classes (invocables, service, controller, monitor) -->
     <classAccesses>
         <apexClass>SentinelService</apexClass>

@@ -1,69 +1,144 @@
 <template>
-    <div class="sen-root">
-        <!-- Header -->
-        <div class="sen-header">
-            <div class="sen-header__glow"></div>
-            <div class="sen-header__titles">
-                <div class="sen-badge">◎ SENTINEL</div>
-                <h1 class="sen-title">Record Health Radar</h1>
-                <p class="sen-subtitle">Stale &amp; at-risk records across every watched object</p>
+    <div class="page">
+        <c-sentinel-section-header
+            eyebrow="SENTINEL · CONTROL ROOM"
+            icon-name="utility:monitor"
+            headline="Record Health Radar"
+            description="Every watched object, scored by how long its records have sat idle. Critical means past three times the configured threshold."
+            readout-value={readoutValue}
+            readout-label="critical now"
+        >
+            <div slot="actions">
+                <lightning-button
+                    variant="inverse"
+                    label={refreshLabel}
+                    icon-name="utility:refresh"
+                    disabled={refreshing}
+                    onclick={handleRefresh}
+                ></lightning-button>
             </div>
-            <div class="sen-controls">
-                <div class="sen-toggle">
-                    <button class={allBtnClass} onclick={handleAll}>All</button>
-                    <button class={mineBtnClass} onclick={handleMine}>Mine</button>
-                </div>
-                <button class="sen-refresh" onclick={handleRefresh} title="Refresh">
-                    <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
-                </button>
-            </div>
+        </c-sentinel-section-header>
+
+        <!-- Scope control strip -->
+        <div class="strip">
+            <lightning-radio-group
+                name="ownerScope"
+                label="Owner scope"
+                variant="label-hidden"
+                type="button"
+                options={scopeOptions}
+                value={scope}
+                onchange={handleScopeChange}
+            ></lightning-radio-group>
+            <p class="strip__note" aria-live="polite">{scopeNote}</p>
         </div>
 
-        <!-- Loading -->
-        <template if:true={loading}>
-            <div class="sen-state">
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        <!-- Initial load: skeletons occupy the exact hero + card boxes -->
+        <template lwc:if={showSkeleton}>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="hero" loading-text="Loading record health"></c-sentinel-skeleton>
+            </div>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="cards" count="4" loading-text="Loading watched objects"></c-sentinel-skeleton>
             </div>
         </template>
 
-        <!-- Error -->
-        <template if:true={error}>
-            <div class="sen-error">
-                <lightning-icon icon-name="utility:warning" size="small" variant="error"></lightning-icon>
-                <span>{errorMessage}</span>
+        <template lwc:elseif={showError}>
+            <div class="slds-m-top_small">
+                <c-sentinel-error-state
+                    headline="Record health could not load"
+                    friendly-message={errorMessage}
+                    technical-detail={errorDetail}
+                    show-retry
+                    retrying={refreshing}
+                    onretry={handleRefresh}
+                ></c-sentinel-error-state>
             </div>
         </template>
 
-        <!-- Data -->
-        <template if:true={hasData}>
-            <div class="sen-kpis">
-                <div class="sen-kpi sen-kpi--total">
-                    <span class="sen-kpi__num">{total}</span>
-                    <span class="sen-kpi__label">Records at-risk</span>
-                </div>
-                <div class="sen-kpi sen-kpi--critical">
-                    <span class="sen-kpi__num">{criticalTotal}</span>
-                    <span class="sen-kpi__label">Critical</span>
-                </div>
-                <div class="sen-kpi sen-kpi--objects">
-                    <span class="sen-kpi__num">{objectCount}</span>
-                    <span class="sen-kpi__label">Objects watched</span>
-                </div>
-            </div>
-
-            <div class="sen-grid">
-                <template for:each={cards} for:item="card">
-                    <c-sentinel-stat-card key={card.key} card={card}></c-sentinel-stat-card>
-                </template>
+        <template lwc:elseif={showEmpty}>
+            <div class="slds-m-top_small">
+                <c-sentinel-empty-state
+                    tone="success"
+                    headline={emptyTitle}
+                    message={emptyMessage}
+                    next-step="Nothing to action right now. Switch scope to All to see the whole team, or re-check after the daily monitor runs."
+                    action-label="Refresh"
+                    action-icon="utility:refresh"
+                    onaction={handleRefresh}
+                ></c-sentinel-empty-state>
             </div>
         </template>
 
-        <!-- Empty -->
-        <template if:true={showEmpty}>
-            <div class="sen-empty">
-                <div class="sen-empty__icon">✓</div>
-                <p>All clear, no active configs returned at-risk records.</p>
-            </div>
+        <template lwc:else>
+            <!-- Hero scoreboard. Critical is the decision the user came here to make. -->
+            <section class="hero fade-in" aria-labelledby="hero-heading">
+                <div class="hero__score">
+                    <h2 class="hero__score-label" id="hero-heading">Critical now</h2>
+                    <p class="hero__numeral">{criticalTotal}</p>
+                    <p class="hero__support">{criticalSupport}</p>
+                    <template lwc:if={overallTrend}>
+                        <p class={overallTrendClass}>
+                            <lightning-icon
+                                icon-name={overallTrend.icon}
+                                size="xx-small"
+                                class="hero__trend-icon"
+                                alternative-text={overallTrend.direction}
+                            ></lightning-icon>
+                            <span>{overallTrend.text}</span>
+                        </p>
+                    </template>
+                </div>
+
+                <div class="hero__gauge">
+                    <c-sentinel-gauge
+                        value={criticalSharePct}
+                        severity={criticalShareSeverity}
+                        size="medium"
+                        label="Critical share"
+                        caption={gaugeCaption}
+                    ></c-sentinel-gauge>
+                </div>
+
+                <div class="hero__tiles">
+                    <div class="tile">
+                        <p class="tile__label">Records at risk</p>
+                        <p class="tile__value">{total}</p>
+                        <div class="tile__bar">
+                            <c-sentinel-band-bar
+                                segments={aggregateBands}
+                                total={total}
+                                thick
+                                unit-label="at-risk records"
+                            ></c-sentinel-band-bar>
+                        </div>
+                    </div>
+                    <div class="tile tile--split">
+                        <div class="tile__cell">
+                            <p class="tile__label">Objects watched</p>
+                            <p class="tile__value tile__value--sm">{objectCount}</p>
+                        </div>
+                        <div class="tile__cell">
+                            <p class="tile__label">Worst object</p>
+                            <p class="tile__text">{worstObjectLabel}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Per-object KPI cards -->
+            <section class="slds-m-top_small" aria-label="Watched objects">
+                <div class="grid">
+                    <template for:each={cards} for:item="card">
+                        <c-sentinel-stat-card key={card.key} card={card}></c-sentinel-stat-card>
+                    </template>
+                </div>
+            </section>
+
+            <p class="footnote">
+                Freshness bands are multiples of each object's configured idle threshold: Aging at 1×, Stale at 2×,
+                Critical at 3×. Up to 200 records are inspected per object.
+            </p>
         </template>
     </div>
 </template>

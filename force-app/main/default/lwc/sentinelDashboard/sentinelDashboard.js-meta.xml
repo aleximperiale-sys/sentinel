@@ -3,7 +3,7 @@
     <apiVersion>65.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Sentinel Dashboard</masterLabel>
-    <description>Colorful record-health dashboard showing at-risk records with freshness bands.</description>
+    <description>Record-health control room: a Critical-first hero scoreboard, a critical-share gauge, and a KPI card per watched object with freshness bands, 7-day trend and the oldest records behind each number.</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>

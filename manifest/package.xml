@@ -17,6 +17,8 @@
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
         <members>Sentinel_Config__mdt</members>
+        <members>Sentinel_Snapshot__c</members>
+        <members>Sentinel_Snooze__c</members>
         <name>CustomObject</name>
     </types>
     <types>
@@ -30,8 +32,13 @@
         <members>SentinelService</members>
         <members>SentinelHealthCheck</members>
         <members>SentinelRollupAction</members>
+        <members>SentinelTeamRollupAction</members>
         <members>SentinelReassignAction</members>
         <members>SentinelFollowUpAction</members>
+        <members>SentinelLogActivityAction</members>
+        <members>SentinelSnoozeAction</members>
+        <members>SentinelAccountContextAction</members>
+        <members>SentinelWhatChangedAction</members>
         <members>SentinelCatalogAction</members>
         <members>SentinelDashboardController</members>
         <members>SentinelMonitor</members>
@@ -41,8 +48,13 @@
     <types>
         <members>Sentinel_HealthCheck</members>
         <members>Sentinel_Rollup</members>
+        <members>Sentinel_TeamRollup</members>
         <members>Sentinel_Reassign</members>
         <members>Sentinel_CreateFollowUp</members>
+        <members>Sentinel_LogActivity</members>
+        <members>Sentinel_Snooze</members>
+        <members>Sentinel_AccountContext</members>
+        <members>Sentinel_WhatChanged</members>
         <members>Sentinel_Catalog</members>
         <name>Flow</name>
     </types>
@@ -51,17 +63,69 @@
         <name>CustomNotificationType</name>
     </types>
     <types>
+        <!-- Page-level components, one per tab -->
         <members>sentinelDashboard</members>
+        <members>sentinelTrends</members>
+        <members>sentinelLeaderboard</members>
+        <members>sentinelSnoozed</members>
+        <members>sentinelPipelineValue</members>
+        <members>sentinelSingleThreaded</members>
+        <members>sentinelActivityGaps</members>
+        <!-- Shared design-system components -->
+        <members>sentinelSectionHeader</members>
         <members>sentinelStatCard</members>
+        <members>sentinelStatusBadge</members>
+        <members>sentinelBandBar</members>
+        <members>sentinelGauge</members>
+        <members>sentinelFilterBar</members>
+        <members>sentinelSkeleton</members>
+        <members>sentinelEmptyState</members>
+        <members>sentinelErrorState</members>
+        <members>sentinelUtils</members>
         <name>LightningComponentBundle</name>
     </types>
     <types>
+        <!-- App pages, one per dashboard tab -->
         <members>Sentinel_Dashboard</members>
+        <members>Sentinel_Trends</members>
+        <members>Sentinel_Leaderboard</members>
+        <members>Sentinel_Snoozed</members>
+        <members>Sentinel_PipelineValue</members>
+        <members>Sentinel_SingleThreaded</members>
+        <members>Sentinel_ActivityGaps</members>
+        <!-- Record pages, assigned as org defaults by the objects' View actionOverrides -->
+        <members>Sentinel_Snooze_Record_Page</members>
+        <members>Sentinel_Snapshot_Record_Page</members>
         <name>FlexiPage</name>
     </types>
     <types>
+        <!-- FlexiPage (AppPage) tabs -->
         <members>Sentinel_Dashboard</members>
+        <members>Sentinel_Trends</members>
+        <members>Sentinel_Leaderboard</members>
+        <members>Sentinel_Snoozed</members>
+        <members>Sentinel_PipelineValue</members>
+        <members>Sentinel_SingleThreaded</members>
+        <members>Sentinel_ActivityGaps</members>
+        <!-- Object tabs, named after the object they expose -->
+        <members>Sentinel_Snooze__c</members>
+        <members>Sentinel_Snapshot__c</members>
         <name>CustomTab</name>
+    </types>
+    <types>
+        <members>Sentinel_Snooze__c-Sentinel Snooze Layout</members>
+        <members>Sentinel_Snapshot__c-Sentinel Snapshot Layout</members>
+        <name>Layout</name>
+    </types>
+    <types>
+        <members>Sentinel_Snooze__c.Sentinel_Snooze_Compact</members>
+        <members>Sentinel_Snapshot__c.Sentinel_Snapshot_Compact</members>
+        <name>CompactLayout</name>
+    </types>
+    <types>
+        <members>Sentinel_Snooze__c.All</members>
+        <members>Sentinel_Snapshot__c.All</members>
+        <name>ListView</name>
     </types>
     <types>
         <members>Sentinel</members>

@@ -1,59 +1,200 @@
 <template>
-    <div class="tr-root">
-        <div class="tr-header">
-            <div>
-                <div class="tr-badge">◎ SENTINEL</div>
-                <h1 class="tr-title">Trends</h1>
-                <p class="tr-subtitle">At-risk and Critical counts over time, per watched object</p>
+    <div class="page">
+        <c-sentinel-section-header
+            eyebrow="SENTINEL · TREND ROOM"
+            icon-name="utility:trending"
+            headline="Risk Trends"
+            description="Daily at-risk and Critical counts per watched object, built from Sentinel snapshot history."
+            readout-value={readoutValue}
+            readout-label="direction overall"
+        >
+            <div slot="actions">
+                <lightning-button
+                    variant="inverse"
+                    label={refreshLabel}
+                    icon-name="utility:refresh"
+                    disabled={refreshing}
+                    onclick={handleRefresh}
+                ></lightning-button>
             </div>
-            <button class="tr-refresh" onclick={handleRefresh} title="Refresh">
-                <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
-            </button>
+        </c-sentinel-section-header>
+
+        <div class="strip">
+            <lightning-radio-group
+                name="range"
+                label="Time range"
+                variant="label-hidden"
+                type="button"
+                options={rangeOptions}
+                value={rangeValue}
+                onchange={handleRangeChange}
+            ></lightning-radio-group>
+            <p class="strip__note" aria-live="polite">{rangeNote}</p>
         </div>
 
-        <template if:true={loading}>
-            <div class="tr-state">
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        <template lwc:if={showSkeleton}>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="charts" count="4" loading-text="Loading trend history"></c-sentinel-skeleton>
             </div>
         </template>
 
-        <template if:true={error}>
-            <div class="tr-error">
-                <lightning-icon icon-name="utility:warning" size="small" variant="error"></lightning-icon>
-                <span>{errorMessage}</span>
+        <template lwc:elseif={showError}>
+            <div class="slds-m-top_small">
+                <c-sentinel-error-state
+                    headline="Trends could not load"
+                    friendly-message={errorMessage}
+                    technical-detail={errorDetail}
+                    show-retry
+                    retrying={refreshing}
+                    onretry={handleRefresh}
+                ></c-sentinel-error-state>
             </div>
         </template>
 
-        <template if:true={hasData}>
-            <div class="tr-grid">
+        <template lwc:elseif={showEmpty}>
+            <div class="slds-m-top_small">
+                <c-sentinel-empty-state
+                    tone="info"
+                    icon-name="utility:trending"
+                    headline="No snapshot history yet"
+                    message="Trends are drawn from Sentinel_Snapshot records, which the daily monitor writes once per run."
+                    next-step="Schedule or run SentinelMonitor, then check back tomorrow for the first line."
+                ></c-sentinel-empty-state>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="grid">
                 <template for:each={rows} for:item="row">
-                    <div class="tr-card" key={row.key}>
-                        <div class="tr-card__head">
-                            <span class="tr-card__label">{row.label}</span>
-                        </div>
-                        <template if:true={row.hasEnough}>
-                            <svg class="tr-chart" viewBox="0 0 300 100" preserveAspectRatio="none">
-                                <polyline class="tr-line tr-line--stale" points={row.staleLine}></polyline>
-                                <polyline class="tr-line tr-line--critical" points={row.criticalLine}></polyline>
-                            </svg>
-                            <div class="tr-legend">
-                                <span class="tr-chip tr-chip--stale">At-risk: {row.latestStale}</span>
-                                <span class="tr-chip tr-chip--critical">Critical: {row.latestCritical}</span>
+                    <article class={row.cardClass} key={row.key}>
+                        <header class="chart__head">
+                            <div class="chart__ident">
+                                <h2 class="chart__label">{row.label}</h2>
+                                <p class="chart__object">{row.objectApiName}</p>
+                            </div>
+                            <template lwc:if={row.delta}>
+                                <c-sentinel-status-badge
+                                    severity={row.delta.severity}
+                                    label={row.delta.label}
+                                    tooltip={row.delta.tooltip}
+                                ></c-sentinel-status-badge>
+                            </template>
+                        </header>
+
+                        <template lwc:if={row.hasSeries}>
+                            <div class="chart__plot">
+                                <svg
+                                    class="chart__svg"
+                                    viewBox="0 0 320 120"
+                                    role="img"
+                                    aria-label={row.ariaLabel}
+                                    focusable="false"
+                                >
+                                    <!-- gridlines -->
+                                    <template for:each={row.gridLines} for:item="line">
+                                        <line
+                                            key={line.key}
+                                            class="chart__grid"
+                                            x1="8"
+                                            x2="312"
+                                            y1={line.y}
+                                            y2={line.y}
+                                        ></line>
+                                    </template>
+                                    <!-- at-risk area + line -->
+                                    <polygon class="chart__area" points={row.areaPoints}></polygon>
+                                    <polyline class="chart__line chart__line--stale" points={row.staleLine}></polyline>
+                                    <!-- critical line -->
+                                    <polyline
+                                        class="chart__line chart__line--critical"
+                                        points={row.criticalLine}
+                                    ></polyline>
+                                    <!-- latest markers -->
+                                    <circle class="chart__dot chart__dot--stale" cx={row.lastX} cy={row.lastStaleY} r="3.5"></circle>
+                                    <circle
+                                        class="chart__dot chart__dot--critical"
+                                        cx={row.lastX}
+                                        cy={row.lastCriticalY}
+                                        r="3.5"
+                                    ></circle>
+                                </svg>
+                                <div class="chart__axis">
+                                    <span>{row.firstDate}</span>
+                                    <span class="chart__axis-max">peak {row.axisMax}</span>
+                                    <span>{row.lastDate}</span>
+                                </div>
+                            </div>
+
+                            <div class="chart__legend">
+                                <c-sentinel-status-badge
+                                    severity="info"
+                                    label="At risk"
+                                    count={row.latestStale}
+                                ></c-sentinel-status-badge>
+                                <c-sentinel-status-badge
+                                    severity="critical"
+                                    label="Critical"
+                                    count={row.latestCritical}
+                                ></c-sentinel-status-badge>
+                            </div>
+
+                            <div class="chart__expand">
+                                <button
+                                    class="chart__toggle"
+                                    type="button"
+                                    data-key={row.key}
+                                    aria-expanded={row.expandedAttr}
+                                    onclick={handleToggle}
+                                >
+                                    <lightning-icon
+                                        icon-name={row.toggleIcon}
+                                        size="xx-small"
+                                        class="chart__toggle-icon"
+                                        alternative-text=""
+                                    ></lightning-icon>
+                                    <span>{row.toggleLabel}</span>
+                                </button>
+
+                                <template lwc:if={row.expanded}>
+                                    <div class="chart__table-wrap">
+                                        <table class="chart__table">
+                                            <caption class="sen-sr">
+                                                Daily at-risk and Critical counts for {row.label}
+                                            </caption>
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Date</th>
+                                                    <th scope="col" class="chart__num">At risk</th>
+                                                    <th scope="col" class="chart__num">Critical</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template for:each={row.tableRows} for:item="point">
+                                                    <tr key={point.key}>
+                                                        <th scope="row">{point.date}</th>
+                                                        <td class="chart__num">{point.stale}</td>
+                                                        <td class="chart__num">{point.critical}</td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </template>
                             </div>
                         </template>
-                        <template if:false={row.hasEnough}>
-                            <div class="tr-nodata">
-                                <span class="tr-nodata__num">{row.latestStale}</span>
-                                <span class="tr-nodata__label">at-risk today, trend line builds up after a few daily runs</span>
+
+                        <template lwc:else>
+                            <div class="chart__single">
+                                <p class="chart__single-num">{row.latestStale}</p>
+                                <p class="chart__single-label">at risk on the only snapshot so far</p>
+                                <p class="chart__single-note">
+                                    A line needs at least two daily runs of SentinelMonitor.
+                                </p>
                             </div>
                         </template>
-                    </div>
+                    </article>
                 </template>
             </div>
-        </template>
-
-        <template if:true={showEmpty}>
-            <div class="tr-empty">No snapshot history yet, the daily monitor needs to run at least once.</div>
         </template>
     </div>
 </template>

@@ -3,7 +3,7 @@
     <apiVersion>65.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Sentinel Pipeline Value</masterLabel>
-    <description>Dollar-weighted view of at-risk Opportunities: total value by freshness band and by stage.</description>
+    <description>Opportunity amount at risk: a hero total, a critical-share gauge, amount split by freshness band, and a searchable, sortable breakdown by stage.</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>

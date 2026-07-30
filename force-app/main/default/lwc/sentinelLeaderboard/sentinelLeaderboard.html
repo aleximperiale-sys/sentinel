@@ -1,48 +1,153 @@
 <template>
-    <div class="lb-root">
-        <div class="lb-header">
-            <div>
-                <div class="lb-badge">◎ SENTINEL</div>
-                <h1 class="lb-title">Team Rollup</h1>
-                <p class="lb-subtitle">At-risk records grouped by owner, across every watched object</p>
+    <div class="page">
+        <c-sentinel-section-header
+            eyebrow="SENTINEL · SCOREBOARD"
+            icon-name="utility:rows"
+            headline="Team Rollup"
+            description="At-risk records grouped by owner, across every watched object. Highest count ranks first."
+            readout-value={readoutValue}
+            readout-label="at-risk records"
+        >
+            <div slot="actions">
+                <lightning-button
+                    variant="inverse"
+                    label={refreshLabel}
+                    icon-name="utility:refresh"
+                    disabled={refreshing}
+                    onclick={handleRefresh}
+                ></lightning-button>
             </div>
-            <button class="lb-refresh" onclick={handleRefresh} title="Refresh">
-                <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
-            </button>
+        </c-sentinel-section-header>
+
+        <div class="slds-m-top_small">
+            <c-sentinel-filter-bar
+                search-label="Search owners"
+                search-placeholder="Search owner…"
+                search-term={searchTerm}
+                sort-options={sortOptions}
+                sort-value={sortBy}
+                shown-count={shownCount}
+                total-count={totalOwners}
+                noun="owners"
+                loading={refreshing}
+                onsearch={handleSearch}
+                onsort={handleSort}
+                onrefresh={handleRefresh}
+            ></c-sentinel-filter-bar>
         </div>
 
-        <template if:true={loading}>
-            <div class="lb-state">
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        <template lwc:if={showSkeleton}>
+            <!-- Summary tiles then rows, so the strip does not push the list down later. -->
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="tiles" count="3" loading-text="Loading rollup summary"></c-sentinel-skeleton>
+            </div>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="rows" count="8" loading-text="Loading team rollup"></c-sentinel-skeleton>
             </div>
         </template>
 
-        <template if:true={error}>
-            <div class="lb-error">
-                <lightning-icon icon-name="utility:warning" size="small" variant="error"></lightning-icon>
-                <span>{errorMessage}</span>
+        <template lwc:elseif={showError}>
+            <div class="slds-m-top_small">
+                <c-sentinel-error-state
+                    headline="Team rollup could not load"
+                    friendly-message={errorMessage}
+                    technical-detail={errorDetail}
+                    show-retry
+                    retrying={refreshing}
+                    onretry={handleRefresh}
+                ></c-sentinel-error-state>
             </div>
         </template>
 
-        <template if:true={hasData}>
-            <div class="lb-card">
-                <div class="lb-list">
-                    <template for:each={rows} for:item="row">
-                        <div class="lb-row" key={row.key}>
-                            <span class="lb-rank">{row.rank}</span>
-                            <span class="lb-owner">{row.owner}</span>
-                            <div class="lb-bar-track">
-                                <div class="lb-bar" style={row.barStyle}></div>
-                            </div>
-                            <span class="lb-count">{row.count}</span>
-                        </div>
-                    </template>
+        <template lwc:elseif={showEmpty}>
+            <div class="slds-m-top_small">
+                <c-sentinel-empty-state
+                    tone="success"
+                    headline="Nobody is carrying at-risk records"
+                    message="Every watched object came back clean, so there is no rollup to rank."
+                    next-step="Open the Record Health Radar to confirm the watched objects are still active."
+                ></c-sentinel-empty-state>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="summary fade-in">
+                <div class="summary__cell">
+                    <p class="summary__label">Owners with risk</p>
+                    <p class="summary__value">{totalOwners}</p>
+                </div>
+                <div class="summary__cell">
+                    <p class="summary__label">At-risk records</p>
+                    <p class="summary__value">{total}</p>
+                </div>
+                <div class="summary__cell summary__cell--wide">
+                    <p class="summary__label">Concentration</p>
+                    <p class="summary__text">{concentrationText}</p>
                 </div>
             </div>
-        </template>
 
-        <template if:true={showEmpty}>
-            <div class="lb-empty">All clear, no at-risk records for any owner.</div>
+            <template lwc:if={noMatches}>
+                <div class="slds-m-top_small">
+                    <c-sentinel-empty-state
+                        tone="neutral"
+                        icon-name="utility:search"
+                        headline="No owner matches that search"
+                        message={noMatchMessage}
+                        action-label="Clear search"
+                        action-icon="utility:close"
+                        onaction={handleClearSearch}
+                    ></c-sentinel-empty-state>
+                </div>
+            </template>
+
+            <template lwc:else>
+                <!-- Custom ranked rows rather than lightning-datatable: a leaderboard row
+                     needs a position treatment, a proportional bar, a share figure and a
+                     severity pill together, and has to restack as a card on phones. -->
+                <ol class="board fade-in" aria-label="Owners ranked by at-risk record count">
+                    <template for:each={visibleRows} for:item="row">
+                        <li class={row.rowClass} key={row.key}>
+                            <span class={row.rankClass} aria-hidden="true">{row.rank}</span>
+                            <span class="board__owner">
+                                <span class="sen-sr">{row.rankText}</span>
+                                <span class="board__owner-name">{row.owner}</span>
+                                <span class="board__owner-share">{row.shareText}</span>
+                            </span>
+                            <span class="board__meter" role="img" aria-label={row.meterLabel}>
+                                <span class="board__meter-fill" style={row.barStyle}></span>
+                            </span>
+                            <span class="board__count">
+                                <span class="board__count-num">{row.count}</span>
+                                <span class="board__count-cap">records</span>
+                            </span>
+                            <span class="board__badge">
+                                <c-sentinel-status-badge
+                                    severity={row.severity}
+                                    label={row.severityLabel}
+                                    compact
+                                    tooltip={row.severityTooltip}
+                                ></c-sentinel-status-badge>
+                            </span>
+                        </li>
+                    </template>
+                </ol>
+
+                <template lwc:if={hasMore}>
+                    <div class="more">
+                        <lightning-button
+                            variant="neutral"
+                            label={moreLabel}
+                            icon-name="utility:chevrondown"
+                            onclick={handleShowMore}
+                        ></lightning-button>
+                    </div>
+                </template>
+            </template>
+
+            <p class="footnote">
+                Ranking counts at-risk records only, it is not a productivity measure. Per-owner change over time is not
+                shown: Sentinel snapshots totals per object, not per owner.
+            </p>
         </template>
     </div>
 </template>

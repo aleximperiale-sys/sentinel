@@ -1,0 +1,42 @@
+<template>
+    <div class="fb">
+        <div class="fb__controls">
+            <template lwc:if={showSearch}>
+                <div class="fb__search">
+                    <lightning-input
+                        type="search"
+                        label={searchLabel}
+                        variant="label-hidden"
+                        placeholder={searchPlaceholder}
+                        value={searchTerm}
+                        onchange={handleSearch}
+                    ></lightning-input>
+                </div>
+            </template>
+
+            <template lwc:if={showSort}>
+                <div class="fb__sort">
+                    <lightning-combobox
+                        label={sortLabel}
+                        variant="label-hidden"
+                        options={sortOptions}
+                        value={sortValue}
+                        placeholder={sortLabel}
+                        onchange={handleSort}
+                    ></lightning-combobox>
+                </div>
+            </template>
+        </div>
+
+        <div class="fb__meta">
+            <p class="fb__count" aria-live="polite">{countLabel}</p>
+            <lightning-button
+                variant="neutral"
+                label={refreshLabel}
+                icon-name="utility:refresh"
+                disabled={loading}
+                onclick={handleRefresh}
+            ></lightning-button>
+        </div>
+    </div>
+</template>

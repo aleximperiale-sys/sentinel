@@ -6,26 +6,6 @@ Ask Sentinel *"what should I work on first?"*, open the **Sentinel** app for a l
 
 ---
 
-## Screenshots
-
-![Sentinel — Record Health Radar](docs/screenshots/01-sentinel.png)
-
-<details>
-<summary>More screenshots</summary>
-
-![Sentinel — at-risk records by object](docs/screenshots/02-sentinel.png)
-*Sentinel — at-risk records by object*
-
-![Trends](docs/screenshots/03-trends.png)
-*Trends — at-risk and critical counts over time, per watched object*
-
-![Team Rollup](docs/screenshots/04-team-rollup.png)
-*Team Rollup — at-risk records grouped by owner*
-
-</details>
-
----
-
 > ## ⚠️ Before you deploy to a new org
 >
 > Three things to configure, the deploy will succeed without them, but the agent won't behave correctly until they're set:
@@ -58,7 +38,7 @@ Most record-hygiene solutions hard-code one query per object. Sentinel inverts t
 Conversation ─ Agentforce "Sentinel" Employee Agent
                  └─ router → 5 sub-agents (see below)
 Automation ── Daily SentinelMonitor → Chatter digest + threshold notifications
-UI ────────── "Sentinel" Lightning app → colorful LWC dashboard (freshness bands)
+UI ────────── "Sentinel" Lightning app → 7 LWC tabs on one shared design system
 Actions ───── 5 flow-fronted invocables: HealthCheck · Rollup · Reassign · FollowUp · Catalog
 Logic ─────── SentinelService (shared engine) + focused controllers
 Data ──────── Sentinel_Config__mdt (one record per watched object)
@@ -102,7 +82,19 @@ Focus and Coach **transition** into other sub-agents, so one thread can flow che
 
 ### UI, the `Sentinel` Lightning app
 
-A colorful LWC dashboard (`sentinelDashboard` + `sentinelStatCard`): gradient header with an **All / Mine** scope toggle and refresh, three KPI hero tiles, and a card per object showing a stacked **freshness-band bar**, band chips, the idle threshold, and top owners.
+Seven tabs share one **"control room"** design system: a deep violet header rail, a light data surface, and chart-forward panels.
+
+| Tab | Component | Reads |
+|---|---|---|
+| **Sentinel** | `sentinelDashboard` | Critical-first hero scoreboard, critical-share gauge, All/Mine scope, a KPI card per watched object (freshness bands, real 7-day trend, expandable oldest records) |
+| **Trends** | `sentinelTrends` | Inline-SVG trend lines per object, 7/14/30-day range, improving/worsening badge, expandable data table |
+| **Team Rollup** | `sentinelLeaderboard` | Ranked owner scoreboard with position treatment, share of total, search, sort, pagination |
+| **Snoozed** | `sentinelSnoozed` | Deferral register with wake-up countdown and row actions |
+| **Pipeline Value** | `sentinelPipelineValue` | Amount at risk, critical-share gauge, band split, breakdown by stage |
+| **Single-Threaded** | `sentinelSingleThreaded` | Relationship-risk register with severity pills and per-row "why" detail |
+| **Activity Gaps** | `sentinelActivityGaps` | Never contacted vs. went cold per object, with a never-worked share gauge |
+
+Nine shared LWCs carry the system so nothing is duplicated: `sentinelSectionHeader`, `sentinelStatCard`, `sentinelStatusBadge`, `sentinelBandBar`, `sentinelGauge`, `sentinelFilterBar`, `sentinelSkeleton`, `sentinelEmptyState`, `sentinelErrorState`, plus the `sentinelUtils` service module. Every view has a skeleton loading state sized to its loaded content, a friendly error state with retry and expandable diagnostics, and an empty state that reads "all clear" as a win. Charts are hand-rolled inline SVG with `role="img"` labels and a text equivalent, no charting library.
 
 ### Automation, `SentinelMonitor`
 
@@ -173,11 +165,22 @@ force-app/main/default/
 ├── classes/                           # SentinelService + 5 actions + controller + monitor + tests
 ├── flows/                             # 5 flow-fronted action targets
 ├── notificationtypes/                 # Sentinel_Alert custom notification
-├── lwc/                               # sentinelDashboard + sentinelStatCard
+├── lwc/                               # 7 page components + 9 shared components + sentinelUtils
 ├── flexipages/  tabs/  applications/  # Sentinel app page, tab, Lightning app
 ├── permissionsets/                    # Sentinel_User
 └── aiAuthoringBundles/Sentinel/       # the Sentinel agent (5 sub-agents)
 ```
+
+## Screenshots
+
+Captured from a live org at a 1200px viewport.
+
+| | |
+|---|---|
+| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Trends](docs/screenshots/02-trends.png) |
+| **Dashboard.** The control room. The critical count is the one number readable from across the room. | **Trends.** Real axes, gridlines and labels, with a text alternative for the chart. |
+| ![Team Rollup](docs/screenshots/03-team-rollup.png) | ![Activity Gaps](docs/screenshots/04-activity-gaps.png) |
+| **Team Rollup.** Ranked owners with share of total. No invented deltas. | **Activity Gaps.** Never contacted and went cold, with the records behind each count. |
 
 ## License
 

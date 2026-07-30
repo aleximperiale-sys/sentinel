@@ -1,49 +1,186 @@
 <template>
-    <div class="ag-root">
-        <div class="ag-header">
-            <div>
-                <div class="ag-badge">◎ SENTINEL</div>
-                <h1 class="ag-title">Activity Gaps</h1>
-                <p class="ag-subtitle">Never contacted vs. went cold, two different problems, two different fixes</p>
+    <div class="page">
+        <c-sentinel-section-header
+            eyebrow="SENTINEL · GAP REGISTER"
+            icon-name="utility:activity"
+            headline="Activity Gaps"
+            description="Never contacted versus went cold. Two different failures with two different fixes, split per watched object."
+            readout-value={readoutValue}
+            readout-label="never contacted"
+        >
+            <div slot="actions">
+                <lightning-button
+                    variant="inverse"
+                    label={refreshLabel}
+                    icon-name="utility:refresh"
+                    disabled={refreshing}
+                    onclick={handleRefresh}
+                ></lightning-button>
             </div>
-            <button class="ag-refresh" onclick={handleRefresh} title="Refresh">
-                <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
-            </button>
+        </c-sentinel-section-header>
+
+        <div class="strip">
+            <lightning-radio-group
+                name="lens"
+                label="Focus"
+                variant="label-hidden"
+                type="button"
+                options={lensOptions}
+                value={lens}
+                onchange={handleLensChange}
+            ></lightning-radio-group>
+            <p class="strip__note" aria-live="polite">{lensNote}</p>
         </div>
 
-        <template if:true={loading}>
-            <div class="ag-state">
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        <template lwc:if={showSkeleton}>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="hero" loading-text="Loading activity gap summary"></c-sentinel-skeleton>
+            </div>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="cards" count="4" loading-text="Loading activity gaps"></c-sentinel-skeleton>
             </div>
         </template>
 
-        <template if:true={error}>
-            <div class="ag-error">
-                <lightning-icon icon-name="utility:warning" size="small" variant="error"></lightning-icon>
-                <span>{errorMessage}</span>
+        <template lwc:elseif={showError}>
+            <div class="slds-m-top_small">
+                <c-sentinel-error-state
+                    headline="Activity gaps could not load"
+                    friendly-message={errorMessage}
+                    technical-detail={errorDetail}
+                    show-retry
+                    retrying={refreshing}
+                    onretry={handleRefresh}
+                ></c-sentinel-error-state>
             </div>
         </template>
 
-        <template if:true={hasData}>
-            <div class="ag-grid">
-                <template for:each={rows} for:item="row">
-                    <div class="ag-card" key={row.key}>
-                        <span class="ag-card__label">{row.label}</span>
-                        <div class="ag-bar">
-                            <div class="ag-seg ag-seg--never" style={row.neverStyle}></div>
-                            <div class="ag-seg ag-seg--cold" style={row.coldStyle}></div>
-                        </div>
-                        <div class="ag-legend">
-                            <span class="ag-chip ag-chip--never">Never contacted: {row.neverContactedCount}</span>
-                            <span class="ag-chip ag-chip--cold">Went cold: {row.wentColdCount}</span>
-                        </div>
-                    </div>
+        <template lwc:elseif={showEmpty}>
+            <div class="slds-m-top_small">
+                <c-sentinel-empty-state
+                    tone="success"
+                    headline="No activity gaps found"
+                    message="Every watched object came back without at-risk records, so there is nothing that has gone quiet or was never worked."
+                    next-step="Nothing to do here. The Record Health Radar is the place to watch for the first drift."
+                ></c-sentinel-empty-state>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <section class="hero fade-in" aria-labelledby="ag-hero">
+                <div class="hero__score">
+                    <h2 class="hero__score-label" id="ag-hero">Never contacted</h2>
+                    <p class="hero__numeral">{neverTotal}</p>
+                    <p class="hero__support">{neverSupport}</p>
+                </div>
+
+                <div class="hero__gauge">
+                    <c-sentinel-gauge
+                        value={neverSharePct}
+                        severity={neverShareSeverity}
+                        size="medium"
+                        label="Never-worked share"
+                        caption="of at-risk records have no logged activity at all"
+                    ></c-sentinel-gauge>
+                </div>
+
+                <div class="hero__split">
+                    <p class="hero__split-label">Gap type across all watched objects</p>
+                    <c-sentinel-band-bar
+                        segments={totalSegments}
+                        total={gapTotal}
+                        thick
+                        unit-label="at-risk records"
+                    ></c-sentinel-band-bar>
+                    <p class="hero__split-note">
+                        Never contacted needs a first touch. Went cold needs a re-engagement plan, the record was
+                        working and then stopped.
+                    </p>
+                </div>
+            </section>
+
+            <div class="grid">
+                <template for:each={cards} for:item="card">
+                    <article class={card.cardClass} key={card.key}>
+                        <header class="gap__head">
+                            <div class="gap__ident">
+                                <h2 class="gap__label">{card.label}</h2>
+                                <p class="gap__object">{card.objectApiName}</p>
+                            </div>
+                            <div class="gap__count">
+                                <span class="gap__numeral">{card.focusCount}</span>
+                                <span class="gap__numeral-cap">{card.focusCap}</span>
+                            </div>
+                        </header>
+
+                        <template lwc:if={card.isClear}>
+                            <div class="gap__clear">
+                                <c-sentinel-status-badge severity="success" label="No gaps"></c-sentinel-status-badge>
+                                <p class="gap__clear-text">
+                                    Nothing at risk on this object, so there is no gap to classify.
+                                </p>
+                            </div>
+                        </template>
+
+                        <template lwc:else>
+                            <div class="gap__bar">
+                                <c-sentinel-band-bar
+                                    segments={card.segments}
+                                    total={card.total}
+                                    unit-label="at-risk records"
+                                ></c-sentinel-band-bar>
+                            </div>
+
+                            <template lwc:if={card.hasRecords}>
+                                <div class="gap__expand">
+                                    <button
+                                        class="gap__toggle"
+                                        type="button"
+                                        data-key={card.key}
+                                        aria-expanded={card.expandedAttr}
+                                        onclick={handleToggle}
+                                    >
+                                        <lightning-icon
+                                            icon-name={card.toggleIcon}
+                                            size="xx-small"
+                                            class="gap__toggle-icon"
+                                            alternative-text=""
+                                        ></lightning-icon>
+                                        <span>{card.toggleLabel}</span>
+                                    </button>
+
+                                    <template lwc:if={card.expanded}>
+                                        <ul class="gap__records">
+                                            <template for:each={card.records} for:item="rec">
+                                                <li class="gap__record" key={rec.id}>
+                                                    <a class="gap__record-link" href={rec.url} title={rec.tooltip}>
+                                                        {rec.name}
+                                                    </a>
+                                                    <span class="gap__record-meta">
+                                                        <c-sentinel-status-badge
+                                                            severity={rec.severity}
+                                                            label={rec.kind}
+                                                            compact
+                                                        ></c-sentinel-status-badge>
+                                                        <span class="gap__record-age">{rec.ageText}</span>
+                                                    </span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                        <template lwc:if={card.moreCount}>
+                                            <p class="gap__more">{card.moreText}</p>
+                                        </template>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                    </article>
                 </template>
             </div>
-        </template>
 
-        <template if:true={showEmpty}>
-            <div class="ag-empty">No active configs returned at-risk records.</div>
+            <p class="footnote">
+                A record counts as never contacted when Sentinel finds no completed Task against it. Went cold means an
+                activity exists but predates the object's idle threshold.
+            </p>
         </template>
     </div>
 </template>

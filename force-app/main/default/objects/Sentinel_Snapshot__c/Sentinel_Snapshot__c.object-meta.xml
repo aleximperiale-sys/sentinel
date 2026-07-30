@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- Assigns Sentinel_Snapshot_Record_Page as the org-default Lightning record page.
+         This View override IS the assignment: without it the FlexiPage is never shown. -->
+    <actionOverrides>
+        <actionName>View</actionName>
+        <comment>Org default Lightning record page for Sentinel Snapshot.</comment>
+        <content>Sentinel_Snapshot_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Flexipage</type>
+    </actionOverrides>
+    <!-- Drives the highlights panel on that record page. -->
+    <compactLayoutAssignment>Sentinel_Snapshot_Compact</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
     <label>Sentinel Snapshot</label>
     <pluralLabel>Sentinel Snapshots</pluralLabel>
     <description>One row per watched object per day, written by SentinelMonitor. Lets Sentinel answer "what changed since yesterday" and detect Critical counts that persist across days for escalation.</description>
+    <!-- Reachable and reportable now that the object has a tab. -->
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
     <nameField>
         <label>Snapshot Number</label>
         <type>AutoNumber</type>

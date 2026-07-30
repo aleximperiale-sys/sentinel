@@ -16,5 +16,8 @@
     <tabs>Sentinel_PipelineValue</tabs>
     <tabs>Sentinel_SingleThreaded</tabs>
     <tabs>Sentinel_ActivityGaps</tabs>
+    <!-- Object tabs: the only way into an individual snooze or snapshot record. -->
+    <tabs>Sentinel_Snooze__c</tabs>
+    <tabs>Sentinel_Snapshot__c</tabs>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
 </CustomApplication>

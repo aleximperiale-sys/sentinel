@@ -1,0 +1,80 @@
+<template>
+    <div class="sk" role="status" aria-live="polite">
+        <span class="sen-sr">{loadingText}</span>
+
+        <!-- KPI / hero row -->
+        <template lwc:if={isHero}>
+            <div class="sk__hero" aria-hidden="true">
+                <div class="sk__hero-main">
+                    <div class="sk__bar sk__bar--label"></div>
+                    <div class="sk__bar sk__bar--numeral"></div>
+                    <div class="sk__bar sk__bar--sub"></div>
+                </div>
+                <div class="sk__hero-gauge"></div>
+            </div>
+        </template>
+
+        <!-- Small stat tiles -->
+        <template lwc:elseif={isTiles}>
+            <div class="sk__tiles" aria-hidden="true">
+                <template for:each={items} for:item="item">
+                    <div class="sk__tile" key={item}>
+                        <div class="sk__bar sk__bar--label"></div>
+                        <div class="sk__bar sk__bar--value"></div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Card grid -->
+        <template lwc:elseif={isCards}>
+            <div class="sk__cards" aria-hidden="true">
+                <template for:each={items} for:item="item">
+                    <div class="sk__card" key={item}>
+                        <div class="sk__card-head">
+                            <div class="sk__bar sk__bar--title"></div>
+                            <div class="sk__bar sk__bar--numeral-sm"></div>
+                        </div>
+                        <div class="sk__bar sk__bar--meter"></div>
+                        <div class="sk__chips">
+                            <div class="sk__chip"></div>
+                            <div class="sk__chip"></div>
+                            <div class="sk__chip"></div>
+                        </div>
+                        <div class="sk__bar sk__bar--foot"></div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Chart cards -->
+        <template lwc:elseif={isCharts}>
+            <div class="sk__cards" aria-hidden="true">
+                <template for:each={items} for:item="item">
+                    <div class="sk__card sk__card--chart" key={item}>
+                        <div class="sk__bar sk__bar--title"></div>
+                        <div class="sk__plot"></div>
+                        <div class="sk__chips">
+                            <div class="sk__chip"></div>
+                            <div class="sk__chip"></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Ranked / register rows -->
+        <template lwc:else>
+            <div class="sk__rows" aria-hidden="true">
+                <template for:each={items} for:item="item">
+                    <div class="sk__row" key={item}>
+                        <div class="sk__rank"></div>
+                        <div class="sk__bar sk__bar--name"></div>
+                        <div class="sk__bar sk__bar--meter"></div>
+                        <div class="sk__bar sk__bar--count"></div>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

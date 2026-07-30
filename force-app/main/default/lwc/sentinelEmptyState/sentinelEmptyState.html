@@ -1,0 +1,32 @@
+<template>
+    <div class={containerClass}>
+        <div class={medallionClass}>
+            <lightning-icon
+                icon-name={resolvedIcon}
+                size="small"
+                variant="inverse"
+                alternative-text=""
+            ></lightning-icon>
+        </div>
+        <p class="es__title">{headline}</p>
+        <template lwc:if={message}>
+            <p class="es__message">{message}</p>
+        </template>
+        <template lwc:if={nextStep}>
+            <p class="es__next">
+                <lightning-icon icon-name="utility:info_alt" size="xx-small" alternative-text="Next step"></lightning-icon>
+                <span>{nextStep}</span>
+            </p>
+        </template>
+        <template lwc:if={actionLabel}>
+            <div class="es__action">
+                <lightning-button
+                    variant="brand"
+                    label={actionLabel}
+                    icon-name={actionIcon}
+                    onclick={handleAction}
+                ></lightning-button>
+            </div>
+        </template>
+    </div>
+</template>

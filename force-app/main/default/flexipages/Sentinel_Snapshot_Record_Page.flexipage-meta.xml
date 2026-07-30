@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Record page for Sentinel_Snapshot__c, assigned as the org default via the object's
+  <actionOverrides> View override (see Sentinel_Snapshot__c.object-meta.xml). Without
+  that override this page exists but is never shown.
+
+  header  : highlights panel, driven by the Sentinel_Snapshot_Compact compact layout.
+  main    : record detail (field order comes from "Sentinel Snapshot Layout"), then
+            sentinelTrends, which charts Sentinel_Snapshot__c history, so the reader
+            sees which point on the curve this single row is.
+  sidebar : Related Lists. Layout driven, so any future child relationship appears
+            automatically. Today nothing is a child of Sentinel_Snapshot__c.
+
+  No Chatter or Activity component: these rows are written unattended by
+  SentinelMonitor once a day, nobody logs a call against a measurement.
+-->
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Record page for one daily Sentinel snapshot: what was measured, when, the at-risk and Critical counts, and the trend the row belongs to.</description>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>force:highlightsPanel</componentName>
+                <identifier>force_highlightsPanel</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>header</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>force:detailPanel</componentName>
+                <identifier>force_detailPanel</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentName>sentinelTrends</componentName>
+                <identifier>sentinelTrendsContext</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>force:relatedListContainer</componentName>
+                <identifier>force_relatedListContainer</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>sidebar</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Sentinel Snapshot Record Page</masterLabel>
+    <sobjectType>Sentinel_Snapshot__c</sobjectType>
+    <template>
+        <name>flexipage:recordHomeTemplateDesktop</name>
+    </template>
+    <type>RecordPage</type>
+</FlexiPage>

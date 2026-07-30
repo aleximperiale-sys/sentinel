@@ -1,62 +1,178 @@
 <template>
-    <div class="pv-root">
-        <div class="pv-header">
-            <div>
-                <div class="pv-badge">◎ SENTINEL</div>
-                <h1 class="pv-title">Pipeline Value at Risk</h1>
-                <p class="pv-subtitle">Dollar-weighted view of stale and Critical Opportunities</p>
+    <div class="page">
+        <c-sentinel-section-header
+            eyebrow="SENTINEL · VALUE AT RISK"
+            icon-name="utility:currency"
+            headline="Pipeline Value at Risk"
+            description="Open Opportunity amount sitting behind stale records, split by freshness band and by stage."
+            readout-value={readoutValue}
+            readout-label="critical amount"
+        >
+            <div slot="actions">
+                <lightning-button
+                    variant="inverse"
+                    label={refreshLabel}
+                    icon-name="utility:refresh"
+                    disabled={refreshing}
+                    onclick={handleRefresh}
+                ></lightning-button>
             </div>
-            <button class="pv-refresh" onclick={handleRefresh} title="Refresh">
-                <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
-            </button>
-        </div>
+        </c-sentinel-section-header>
 
-        <template if:true={loading}>
-            <div class="pv-state">
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        <template lwc:if={showSkeleton}>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="hero" loading-text="Loading pipeline value at risk"></c-sentinel-skeleton>
+            </div>
+            <div class="slds-m-top_small">
+                <c-sentinel-skeleton variant="rows" count="6" loading-text="Loading stage breakdown"></c-sentinel-skeleton>
             </div>
         </template>
 
-        <template if:true={error}>
-            <div class="pv-error">
-                <lightning-icon icon-name="utility:warning" size="small" variant="error"></lightning-icon>
-                <span>{errorMessage}</span>
+        <template lwc:elseif={showError}>
+            <div class="slds-m-top_small">
+                <c-sentinel-error-state
+                    headline="Pipeline value could not load"
+                    friendly-message={errorMessage}
+                    technical-detail={errorDetail}
+                    show-retry
+                    retrying={refreshing}
+                    onretry={handleRefresh}
+                ></c-sentinel-error-state>
             </div>
         </template>
 
-        <template if:true={hasData}>
-            <div class="pv-kpis">
-                <div class="pv-kpi pv-kpi--total">
-                    <span class="pv-kpi__num">{totalFormatted}</span>
-                    <span class="pv-kpi__label">Total at-risk</span>
-                </div>
-                <div class="pv-kpi pv-kpi--critical">
-                    <span class="pv-kpi__num">{criticalFormatted}</span>
-                    <span class="pv-kpi__label">Critical</span>
-                </div>
-                <div class="pv-kpi pv-kpi--stale">
-                    <span class="pv-kpi__num">{staleFormatted}</span>
-                    <span class="pv-kpi__label">Stale</span>
-                </div>
-                <div class="pv-kpi pv-kpi--aging">
-                    <span class="pv-kpi__num">{agingFormatted}</span>
-                    <span class="pv-kpi__label">Aging</span>
-                </div>
+        <template lwc:elseif={showEmpty}>
+            <div class="slds-m-top_small">
+                <c-sentinel-empty-state
+                    tone="success"
+                    headline="No Opportunity value is at risk"
+                    message="Every open Opportunity Sentinel watches has been touched inside its idle threshold, so there is no amount to report."
+                    next-step="Keep it there: the Record Health Radar shows which objects are drifting first."
+                ></c-sentinel-empty-state>
             </div>
+        </template>
 
-            <div class="pv-card">
-                <h2 class="pv-card__title">By stage</h2>
-                <template for:each={stageRows} for:item="row">
-                    <div class="pv-row" key={row.key}>
-                        <span class="pv-stage">{row.stage}</span>
-                        <div class="pv-bar-track">
-                            <div class="pv-bar" style={row.barStyle}></div>
-                        </div>
-                        <span class="pv-amount">{row.amountFormatted}</span>
-                        <span class="pv-count">{row.count} deals</span>
+        <template lwc:else>
+            <section class="hero fade-in" aria-labelledby="pv-hero">
+                <div class="hero__score">
+                    <h2 class="hero__score-label" id="pv-hero">Total at risk</h2>
+                    <p class="hero__numeral">
+                        <lightning-formatted-number
+                            value={totalAmount}
+                            format-style="currency"
+                            maximum-fraction-digits="0"
+                        ></lightning-formatted-number>
+                    </p>
+                    <p class="hero__support">{dealCountText}</p>
+                </div>
+
+                <div class="hero__gauge">
+                    <c-sentinel-gauge
+                        value={criticalSharePct}
+                        severity={criticalShareSeverity}
+                        size="medium"
+                        label="Critical share"
+                        caption="of at-risk amount is past 3× its threshold"
+                    ></c-sentinel-gauge>
+                </div>
+
+                <div class="hero__bands">
+                    <p class="hero__bands-label">Amount by freshness band</p>
+                    <c-sentinel-band-bar
+                        segments={bandSegments}
+                        total={bandTotal}
+                        thick
+                        hide-legend
+                        unit-label="in at-risk amount"
+                    ></c-sentinel-band-bar>
+                    <ul class="bands">
+                        <template for:each={bandRows} for:item="band">
+                            <li class="bands__row" key={band.key}>
+                                <c-sentinel-status-badge
+                                    severity={band.severity}
+                                    label={band.label}
+                                    compact
+                                ></c-sentinel-status-badge>
+                                <span class="bands__amount">
+                                    <lightning-formatted-number
+                                        value={band.amount}
+                                        format-style="currency"
+                                        maximum-fraction-digits="0"
+                                    ></lightning-formatted-number>
+                                </span>
+                                <span class="bands__share">{band.shareText}</span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="panel fade-in" aria-labelledby="pv-stage">
+                <header class="panel__head">
+                    <div>
+                        <h2 class="panel__title" id="pv-stage">By stage</h2>
+                        <p class="panel__desc">
+                            Where the at-risk amount is concentrated. Late-stage value that has gone quiet is the most
+                            expensive kind.
+                        </p>
+                    </div>
+                </header>
+
+                <c-sentinel-filter-bar
+                    search-label="Search stages"
+                    search-placeholder="Search stage…"
+                    search-term={searchTerm}
+                    sort-options={sortOptions}
+                    sort-value={sortBy}
+                    shown-count={shownCount}
+                    total-count={totalStages}
+                    noun="stages"
+                    loading={refreshing}
+                    onsearch={handleSearch}
+                    onsort={handleSort}
+                    onrefresh={handleRefresh}
+                ></c-sentinel-filter-bar>
+
+                <template lwc:if={noMatches}>
+                    <div class="slds-m-top_small">
+                        <c-sentinel-empty-state
+                            tone="neutral"
+                            icon-name="utility:search"
+                            headline="No stage matches that search"
+                            message={noMatchMessage}
+                            action-label="Clear search"
+                            action-icon="utility:close"
+                            onaction={handleClearSearch}
+                        ></c-sentinel-empty-state>
                     </div>
                 </template>
-            </div>
+
+                <template lwc:else>
+                    <ul class="stages" aria-label="At-risk amount by stage">
+                        <template for:each={stageRows} for:item="row">
+                            <li class="stages__row" key={row.key}>
+                                <span class="stages__name" title={row.stage}>{row.stage}</span>
+                                <span class="stages__meter" role="img" aria-label={row.meterLabel}>
+                                    <span class="stages__meter-fill" style={row.barStyle}></span>
+                                </span>
+                                <span class="stages__amount">
+                                    <lightning-formatted-number
+                                        value={row.amount}
+                                        format-style="currency"
+                                        maximum-fraction-digits="0"
+                                    ></lightning-formatted-number>
+                                </span>
+                                <span class="stages__count">{row.countText}</span>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+            </section>
+
+            <p class="footnote">
+                Amounts come from the Amount field configured for Opportunity in Sentinel Config. Records with no amount
+                count toward the deal count but add nothing to the totals.
+            </p>
         </template>
     </div>
 </template>

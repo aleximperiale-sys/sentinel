@@ -3,10 +3,11 @@
     <apiVersion>65.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Sentinel Trends</masterLabel>
-    <description>Daily at-risk and Critical trend lines per watched object, built from Sentinel_Snapshot__c history.</description>
+    <description>At-risk and Critical trend lines per watched object, drawn as inline SVG from Sentinel_Snapshot__c history, with a 7/14/30-day range switch and an expandable data table for every chart.</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>
         <target>lightning__Tab</target>
+        <target>lightning__RecordPage</target>
     </targets>
 </LightningComponentBundle>
