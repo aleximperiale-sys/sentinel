@@ -117,7 +117,7 @@ public with sharing class SentinelService {
         if (scopeMine) { q += ' AND ' + ownerField + ' = :currentUserId'; }
         q += ' ORDER BY ' + sortField + ' ' + sortDir + ' NULLS LAST LIMIT 200';
 
-        List<SObject> rows = Database.query(q);
+        List<SObject> rows = Database.query(q, AccessLevel.USER_MODE);
 
         Report rep = new Report();
         rep.objectApiName = cfg.Object_API_Name__c;
@@ -212,6 +212,7 @@ public with sharing class SentinelService {
         for (Sentinel_Snooze__c s : [
             SELECT Record_Id__c, Snoozed_Until__c FROM Sentinel_Snooze__c
             WHERE Record_Id__c IN :idsToStrings(ids) AND Snoozed_Until__c >= TODAY
+            WITH USER_MODE
         ]) {
             out.put((Id) s.Record_Id__c, s.Snoozed_Until__c);
         }
@@ -230,6 +231,7 @@ public with sharing class SentinelService {
         for (Task t : [
             SELECT WhatId, WhoId, Subject, ActivityDate FROM Task
             WHERE (WhatId IN :ids OR WhoId IN :ids) AND Status = 'Completed'
+            WITH USER_MODE
             ORDER BY ActivityDate DESC NULLS LAST LIMIT 500
         ]) {
             Id key = t.WhatId != null && ids.contains(t.WhatId) ? t.WhatId : t.WhoId;
@@ -244,6 +246,7 @@ public with sharing class SentinelService {
         for (Task t : [
             SELECT WhatId, WhoId, Subject, ActivityDate FROM Task
             WHERE (WhatId IN :ids OR WhoId IN :ids) AND Status != 'Completed'
+            WITH USER_MODE
             ORDER BY ActivityDate ASC NULLS LAST LIMIT 500
         ]) {
             Id key = t.WhatId != null && ids.contains(t.WhatId) ? t.WhatId : t.WhoId;
@@ -258,7 +261,9 @@ public with sharing class SentinelService {
         if (oppIds.isEmpty()) { return out; }
         for (AggregateResult ar : [
             SELECT OpportunityId oppId, COUNT(Id) cnt FROM OpportunityContactRole
-            WHERE OpportunityId IN :oppIds GROUP BY OpportunityId
+            WHERE OpportunityId IN :oppIds
+            WITH USER_MODE
+            GROUP BY OpportunityId
         ]) {
             out.put((Id) ar.get('oppId'), (Integer) ar.get('cnt'));
         }

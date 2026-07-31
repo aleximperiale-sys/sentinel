@@ -31,6 +31,7 @@ public with sharing class SentinelWhatChangedAction {
                     SELECT Stale_Count__c, Critical_Count__c, Snapshot_Date__c
                     FROM Sentinel_Snapshot__c
                     WHERE Object_API_Name__c = :cfg.Object_API_Name__c AND Snapshot_Date__c < TODAY
+                    WITH USER_MODE
                     ORDER BY Snapshot_Date__c DESC LIMIT 1
                 ];
 

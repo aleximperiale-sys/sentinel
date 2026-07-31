@@ -75,6 +75,7 @@ public with sharing class SentinelDashboardController {
             SELECT Object_API_Name__c, Label__c, Snapshot_Date__c, Stale_Count__c, Critical_Count__c
             FROM Sentinel_Snapshot__c
             WHERE Snapshot_Date__c >= :since
+            WITH USER_MODE
             ORDER BY Object_API_Name__c, Snapshot_Date__c ASC
         ]) {
             if (!byObject.containsKey(s.Object_API_Name__c)) {
@@ -126,6 +127,7 @@ public with sharing class SentinelDashboardController {
             SELECT Record_Id__c, Object_API_Name__c, Reason__c, Snoozed_Until__c, Snoozed_By__r.Name
             FROM Sentinel_Snooze__c
             WHERE Snoozed_Until__c >= TODAY
+            WITH USER_MODE
             ORDER BY Snoozed_Until__c ASC
         ];
         Map<String, Map<Id, String>> namesByObject = resolveDisplayNames(rows);

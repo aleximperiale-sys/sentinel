@@ -31,9 +31,9 @@ public with sharing class SentinelAccountContextAction {
                 continue;
             }
 
-            Account acct = [SELECT Name FROM Account WHERE Id = :accountId LIMIT 1];
-            Integer openCases = [SELECT COUNT() FROM Case WHERE AccountId = :accountId AND IsClosed = false];
-            Integer openOpps = [SELECT COUNT() FROM Opportunity WHERE AccountId = :accountId AND IsClosed = false];
+            Account acct = [SELECT Name FROM Account WHERE Id = :accountId WITH USER_MODE LIMIT 1];
+            Integer openCases = [SELECT COUNT() FROM Case WHERE AccountId = :accountId AND IsClosed = false WITH USER_MODE];
+            Integer openOpps = [SELECT COUNT() FROM Opportunity WHERE AccountId = :accountId AND IsClosed = false WITH USER_MODE];
 
             r.accountName = acct.Name;
             r.openCaseCount = openCases;
@@ -47,11 +47,11 @@ public with sharing class SentinelAccountContextAction {
     private static Id resolveAccountId(Id rid) {
         if (rid == null) { return null; }
         if (rid.getSObjectType() == Opportunity.SObjectType) {
-            List<Opportunity> opps = [SELECT AccountId FROM Opportunity WHERE Id = :rid LIMIT 1];
+            List<Opportunity> opps = [SELECT AccountId FROM Opportunity WHERE Id = :rid WITH USER_MODE LIMIT 1];
             return opps.isEmpty() ? null : opps[0].AccountId;
         }
         if (rid.getSObjectType() == Case.SObjectType) {
-            List<Case> cases = [SELECT AccountId FROM Case WHERE Id = :rid LIMIT 1];
+            List<Case> cases = [SELECT AccountId FROM Case WHERE Id = :rid WITH USER_MODE LIMIT 1];
             return cases.isEmpty() ? null : cases[0].AccountId;
         }
         return null; // Leads and Tasks aren't Account-linked in this model

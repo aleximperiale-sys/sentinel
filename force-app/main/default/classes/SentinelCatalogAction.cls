@@ -22,7 +22,9 @@ public with sharing class SentinelCatalogAction {
             ? [
                 SELECT Label__c, Object_API_Name__c, Date_Field__c, Stale_Days__c,
                        Priority_Field__c, Threshold_Alert__c
-                FROM Sentinel_Config__mdt ORDER BY Label__c
+                FROM Sentinel_Config__mdt
+                WITH USER_MODE
+                ORDER BY Label__c
               ]
             : SentinelService.getActiveConfigs();
 
